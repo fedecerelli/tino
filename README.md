@@ -1,4 +1,4 @@
-# Cauce
+# Tino
 
 Presupuesto personal minimalista. Local-first, sin servicios pagos, sin cuentas.
 
@@ -14,6 +14,6 @@ Presupuesto personal minimalista. Local-first, sin servicios pagos, sin cuentas.
 
 ## Uso
 
-👉 **[Abrir Cauce](https://tu-usuario.github.io/cauce/)**
+👉 **[Abrir Tino](https://fedecerelli.github.io/tino/)**
 
 Los datos se guardan 100% en tu navegador. Nada viaja a ningún servidor.
