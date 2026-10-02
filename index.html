@@ -1735,7 +1735,8 @@ function planData(key){
   const rows=state.methods.map(me=>{const l=mvs.filter(x=>x.method===me.id);
     return{id:me.id,name:me.name,inCob:sum(l.filter(x=>x.type==='ingreso'&&paid(x))),inPend:sum(l.filter(x=>x.type==='ingreso'&&!paid(x))),
       outPag:sum(l.filter(x=>isOut(x)&&paid(x))),outPend:sum(l.filter(x=>isOut(x)&&!paid(x)))}});
-  const items=mvs.filter(toHub);
+  // Las asignaciones se descuentan por lo ya gastado con ellas (gastos pagados "con la asignación")
+  const items=mvs.filter(toHub).map(x=>x.type==='asignacion'?Object.assign({},x,{_orig:Number(x.amount)||0,amount:allocationRemaining(x.id)}):x).filter(x=>x.type!=='asignacion'||x.amount>0||doneI[x.id]);
   const map=new Map();
   items.forEach(x=>{const r=reserveOf(x.cat);if(!map.has(r.key))map.set(r.key,{key:r.key,name:r.name,total:0,rem:0,items:[],due:null});
     const g=map.get(r.key),am=Number(x.amount)||0;g.total+=am;if(!doneI[x.id]){g.rem+=am;if(x.dueDate&&(!g.due||x.dueDate<g.due))g.due=x.dueDate}g.items.push(x)});
@@ -1796,7 +1797,7 @@ function renderPlan(){
         <summary><input type="checkbox" class="chk" data-plan-done="${esc(g.key)}" ${g.done?'checked':''} title="Marcar toda la reserva como ya pasada">
           <div class="nm"><b>${esc(g.name)}</b><small>${g.items.length} ítem${g.items.length!==1?'s':''}${g.due?' · vence '+fmtDM(g.due):''}</small></div>
           <div class="pa amt">${money(g.done?g.total:g.rem,0)}</div></summary>
-        <div class="plan-items">${g.items.map(x=>`<div class="${movState(x)==='vencido'?'late':''}"><label style="display:flex;gap:8px;align-items:center;flex:1;min-width:0"><input type="checkbox" data-plan-item="${x.id}" ${((getMonth(key).plan||{}).doneItems||{})[x.id]?'checked':''}><span>${esc(x.concept)}${x.type!=='gasto'?' <em style="opacity:.7">('+esc(x.type)+')</em>':''}${x.dueDate?' · '+fmtDM(x.dueDate):''}</span></label><span class="amt">${money(x.amount,0)}</span></div>`).join('')}</div>
+        <div class="plan-items">${g.items.map(x=>`<div class="${movState(x)==='vencido'?'late':''}"><label style="display:flex;gap:8px;align-items:center;flex:1;min-width:0"><input type="checkbox" data-plan-item="${x.id}" ${((getMonth(key).plan||{}).doneItems||{})[x.id]?'checked':''}><span>${esc(x.concept)}${x.type!=='gasto'?' <em style="opacity:.7">('+esc(x.type)+(x._orig!==undefined&&x._orig!==x.amount?' · quedan '+money(x.amount,0)+' de '+money(x._orig,0):'')+')</em>':''}${x.dueDate?' · '+fmtDM(x.dueDate):''}</span></label><span class="amt">${money(x.amount,0)}</span></div>`).join('')}</div>
       </details>`).join(''):'<div class="empty">No hay nada para pasar este mes 🎉</div>'}
     </div>
     <div class="card">
