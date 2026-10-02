@@ -486,20 +486,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #report svg{max-width:100%}
 #report .chart-box svg{filter:grayscale(.45) contrast(1.02)}
 
-/* Puerta de recuperación: independiente de la navegación inferior. */
-.emergency-import{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:100000;display:block;pointer-events:auto}
-.emergency-import-btn{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border:1px solid rgba(0,0,0,.18);border-radius:12px;background:#fff;color:#111;font:700 13px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.18);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.emergency-import-btn:active{transform:translateY(1px)}
-@media (max-width:720px){.emergency-import{top:max(8px,env(safe-area-inset-top));right:8px}.emergency-import-btn{min-height:44px;padding:0 11px;border-radius:11px;font-size:12px}.emergency-import-btn span{display:inline}}
-@media print{.emergency-import{display:none!important}}
 </style>
 </head>
 <body>
 
-<div id="emergencyImport" class="emergency-import" aria-label="Recuperar datos">
-  <label for="fileImportEmergency" class="emergency-import-btn">↥ <span>Importar / recuperar JSON</span></label>
-  <input type="file" id="fileImportEmergency" accept=".json,application/json" hidden>
-</div>
 
 <div class="discreto-pill" id="discretoPill">● MODO DISCRETO</div>
 
@@ -976,10 +966,7 @@ const defaultState=()=>({
   created:new Date().toISOString()
 });
 
-const DB_NAME='presupuesto_v7',STORE='kv';const SYNC_GEN_KEY='tino_sync_generation_v1';let _db=null,_useIDB=false;
-function globalSyncGeneration(){try{return Number(localStorage.getItem(SYNC_GEN_KEY)||0)}catch(e){return 0}}
-function bumpSyncGeneration(){const n=globalSyncGeneration()+1;try{localStorage.setItem(SYNC_GEN_KEY,String(n))}catch(e){}return n}
-function ensureSyncGeneration(){state.sync=state.sync||{};const g=Math.max(Number(state.sync.generation||0),globalSyncGeneration());state.sync.generation=g;try{localStorage.setItem(SYNC_GEN_KEY,String(g))}catch(e){}return g}
+const DB_NAME='presupuesto_v7',STORE='kv';let _db=null,_useIDB=false;
 function openDB(){return new Promise((res,rej)=>{if(!('indexedDB'in window))return rej(new Error('no idb'));const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>{_db=r.result;res(_db)};r.onerror=()=>rej(r.error)})}
 const idbGet=k=>new Promise((res,rej)=>{const t=_db.transaction(STORE,'readonly').objectStore(STORE).get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error)});
 const idbSet=(k,v)=>new Promise((res,rej)=>{const t=_db.transaction(STORE,'readwrite').objectStore(STORE).put(v,k);t.onsuccess=()=>res();t.onerror=()=>rej(t.error)});
@@ -994,20 +981,15 @@ const storage={
     try{localStorage.setItem(LS_KEY,JSON.stringify(v))}catch(e){}
   }
 };
-let bc=null;try{bc=new BroadcastChannel('tino_sync')}catch(e){}
+let bc=null;
 let fileHandle=null;let fileSupported=typeof window.showSaveFilePicker==='function';
 let autoFileSave=true;
 let saveTimer=null;
 function persist(){
   clearTimeout(saveTimer);
-  ensureSyncGeneration();
-  const revision=Date.now();
-  state.sync=state.sync||{};
-  state.sync.revision=Math.max(Number(state.sync.revision||0),revision);
   saveTimer=setTimeout(async()=>{
     let copy;try{copy=structuredClone(state)}catch(e){copy=JSON.parse(JSON.stringify(state))}
     try{await storage.set(copy)}catch(e){}
-    if(bc){try{bc.postMessage({type:'save',ts:revision,revision:copy.sync?.revision||revision,state:copy})}catch(e){}}
     if(fileHandle&&autoFileSave){
       try{const w=await fileHandle.createWritable();await w.write(JSON.stringify(state,null,2));await w.close();
         state.sync.lastSave=new Date().toISOString();updateSyncIndicator();
@@ -1715,7 +1697,6 @@ async function gistPull(){
   }catch(e){toast('Error: '+e.message)}
 }
 function importStateFromObject(data){
-  const generation=bumpSyncGeneration();
   state=Object.assign(defaultState(),data);
   state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},data.settings||{});
   if(!Array.isArray(state.settings.bottomBar)||!state.settings.bottomBar.length)state.settings.bottomBar=[...DEFAULT_BOTTOM_BAR];
@@ -1726,13 +1707,11 @@ function importStateFromObject(data){
   state.cheques=Array.isArray(data.cheques)?data.cheques:[];
   state.months=data.months||{};
   state.sync=Object.assign(defaultState().sync,data.sync||{});
-  state.sync.generation=generation;
   state.sync.revision=Date.now();
   normalizeBottomBar();
   Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
   state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
   applyTheme(state.settings.theme);applyDiscreto();renderTabs();
-  if(bc){try{bc.postMessage({type:'import',generation,state,revision:state.sync.revision})}catch(e){}}
   persist();renderAll();
 }
 function updateSyncIndicator(){
@@ -2315,7 +2294,6 @@ function bindEvents(){
   $('#btnExportCsv').addEventListener('click',exportCSV);
   $('#btnImport').addEventListener('click',()=>$('#fileImport').click());
   $('#fileImport').addEventListener('change',e=>{const f=e.target.files[0];if(f)importJSON(f);e.target.value=''});
-  $('#fileImportEmergency')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)importJSON(f);e.target.value=''});
   $('#btnReset').addEventListener('click',()=>{
     if(!confirm('Se borrarán TODOS los datos. ¿Continuar?'))return;
     state=defaultState();ensureMonth(ui.month);fileHandle=null;
@@ -2329,30 +2307,6 @@ function bindEvents(){
     if(e.key==='ArrowRight')setMonth(shiftMonth(ui.month,1));
   });
 
-  if(bc){
-    bc.addEventListener('message',async ev=>{
-      if(!ev.data||!['save','import'].includes(ev.data.type))return;
-      try{
-        const incoming=ev.data.state;
-        if(!incoming||typeof incoming!=='object')return;
-        const incomingGen=Number(ev.data.generation||incoming.sync?.generation||0);
-        const localGen=Number(state.sync?.generation||0);
-        if(incomingGen<localGen)return;
-        const incomingRev=Number(ev.data.revision||incoming.sync?.revision||0);
-        const localRev=Number(state.sync?.revision||0);
-        if(ev.data.type==='save' && incomingGen===localGen && incomingRev<localRev)return;
-        state=Object.assign(defaultState(),incoming);
-        state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},state.settings||{});
-        state.sync=Object.assign(defaultState().sync,incoming.sync||{});
-        state.sync.generation=incomingGen;
-        normalizeBottomBar();
-        Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
-        applyTheme(state.settings.theme);applyDiscreto();renderAll();
-        try{localStorage.setItem(SYNC_GEN_KEY,String(incomingGen))}catch(e){}
-        if(ev.data.type==='import')toast('Datos importados y sincronizados');
-      }catch(e){}
-    });
-  }
 }
 
 function openSheet(id){$('#'+id).classList.add('show');$('#sheetBackdrop').classList.add('show')}
