@@ -1104,6 +1104,16 @@ function renderAllocationOptions(select, selected=''){
   }).join('');
   select.innerHTML=`<option value="">Sin asignación</option>${opts}`;
 }
+function goalMovements(id){const out=[];Object.values(state.months||{}).forEach(m=>((m&&m.movements)||[]).forEach(x=>{if(!x)return;if((x.type==='ahorro'&&x.goalId===id)||(x.type==='gasto'&&x.fundingKind==='meta'&&x.fundingId===id))out.push(x)}));return out}
+function globalSyncGeneration(){try{return Number(state&&state.sync&&state.sync.generation||0)}catch(e){return 0}}
+function cleanMonths(months){
+  const out={};
+  if(months&&typeof months==='object'){Object.keys(months).forEach(k=>{
+    const m=months[k];if(!m||typeof m!=='object')return;
+    out[k]={movements:Array.isArray(m.movements)?m.movements.filter(x=>x&&typeof x==='object'):[],budgets:(m.budgets&&typeof m.budgets==='object')?m.budgets:{}};
+  })}
+  return out;
+}
 function goalBase(g){return Number(g.baseCurrent===undefined?g.current||0:g.baseCurrent)||0}
 function goalBalance(g){let n=goalBase(g);Object.values(state.months).forEach(m=>(m.movements||[]).forEach(x=>{if(x.type==='ahorro'&&x.goalId===g.id)n+=Number(x.amount||0);if(x.type==='gasto'&&x.fundingKind==='meta'&&x.fundingId===g.id)n-=Number(x.amount||0)}));return Math.max(0,n)}
 function generalSavingsBalance(){let n=0;Object.values(state.months).forEach(m=>(m.movements||[]).forEach(x=>{if(x.type==='ahorro'&&!x.goalId)n+=Number(x.amount||0);if(x.type==='gasto'&&x.fundingKind==='ahorro')n-=Number(x.amount||0)}));return Math.max(0,n)}
@@ -1705,13 +1715,14 @@ function importStateFromObject(data){
   state.cats=Array.isArray(data.cats)&&data.cats.length?data.cats:DEFAULT_CATS;
   state.goals=Array.isArray(data.goals)?data.goals:[];
   state.cheques=Array.isArray(data.cheques)?data.cheques:[];
-  state.months=data.months||{};
-  state.sync=Object.assign(defaultState().sync,data.sync||{});
+  state.months=cleanMonths(data.months);
+  state.sync=Object.assign(defaultState().sync,(data.sync&&typeof data.sync==='object')?data.sync:{});
   state.sync.revision=Date.now();
   normalizeBottomBar();
   Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
   state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
-  applyTheme(state.settings.theme);applyDiscreto();renderTabs();
+  ensureMonth(ui.month);
+  safeRun([()=>applyTheme(state.settings.theme||'boca'),applyDiscreto,renderTabs]);
   persist();renderAll();
 }
 function updateSyncIndicator(){
@@ -1901,13 +1912,9 @@ function applyAccessibility(){
   $$('.tab').forEach(b=>{if(b.dataset.view)b.setAttribute('aria-current',ui.view===b.dataset.view?'page':'false')});
 }
 
+function safeRun(fns){fns.forEach(f=>{try{f()}catch(e){console.error('Error en '+(f.name||'render'),e)}})}
 function renderAll(){
-  renderKpis();renderCharts();renderQuickAdd();
-  renderMovTable();renderCalendar();renderCheques();
-  renderBudget();renderGoals();renderSettings();
-  renderHelp();renderAsesor();
-  renderTabs();renderSheetMore();
-  updateSyncIndicator();applyAccessibility();
+  safeRun([renderTabs,renderSheetMore,renderKpis,renderCharts,renderQuickAdd,renderMovTable,renderCalendar,renderCheques,renderBudget,renderGoals,renderSettings,renderHelp,renderAsesor,updateSyncIndicator,applyAccessibility]);
 }
 
 function gcalLink(raw,which){
@@ -1957,7 +1964,7 @@ function switchView(v){
 }
 function setMonth(key){
   ui.month=key;ui.calMonth=key;$('#monthPicker').value=key;
-  renderKpis();renderCharts();renderMovTable();renderBudget();renderGoals();renderCalendar();renderAsesor();
+  safeRun([renderKpis,renderCharts,renderMovTable,renderBudget,renderGoals,renderCalendar,renderAsesor]);
 }
 function resetQA(){
   ui.editId=null;
@@ -2451,6 +2458,7 @@ function buildReportHTML(){
 function generatePDF(){$('#report').innerHTML=buildReportHTML();setTimeout(()=>window.print(),120)}
 
 function bindUI(){
+  window.__tinoBound=true;
   $('#logoIcon').innerHTML=icon('piggy',16);
   $('#btnPrev').innerHTML=icon('left',16);
   $('#btnNext').innerHTML=icon('right',16);
@@ -2502,39 +2510,65 @@ function bindUI(){
   bindEvents();
 }
 
+function showRecovery(err){
+  try{console.error('Tino: error de inicio',err)}catch(e){}
+  if(document.getElementById('tinoRecovery'))return;
+  const d=document.createElement('div');d.id='tinoRecovery';
+  d.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#7f1d1d;color:#fff;padding:12px;border-radius:10px;font:14px system-ui;box-shadow:0 4px 20px #0008';
+  d.innerHTML='<b>Hubo un problema al cargar tus datos guardados.</b><div style="margin:6px 0">Podés cargar tu archivo .json de respaldo o borrar los datos locales de este navegador y empezar de cero.</div>'
+   +'<input type="file" id="recFile" accept=".json,application/json" style="margin:4px 0;max-width:100%"><br>'
+   +'<button id="recReset" style="margin-top:6px;padding:8px 12px;border:0;border-radius:8px;background:#fff;color:#7f1d1d;font-weight:700">Borrar datos locales y reiniciar</button>';
+  document.body.appendChild(d);
+  document.getElementById('recFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{try{importStateFromObject(JSON.parse(r.result));d.remove()}catch(x){alert('Archivo no válido: '+x.message)}};r.readAsText(f)};
+  document.getElementById('recReset').onclick=async()=>{
+    try{localStorage.removeItem(LS_KEY)}catch(e){}
+    try{if(_db)_db.close()}catch(e){}
+    try{await new Promise(res=>{const q=indexedDB.deleteDatabase(DB_NAME);q.onsuccess=q.onerror=q.onblocked=()=>res()})}catch(e){}
+    location.reload();
+  };
+}
 async function init(){
   try{await openDB();_useIDB=true}catch(e){_useIDB=false}
   let saved=null;
   try{saved=await storage.get()}catch(e){}
+  if(!saved&&_useIDB){try{const raw=localStorage.getItem(LS_KEY);if(raw)saved=JSON.parse(raw)}catch(e){}}
+  let loadErr=null;
 
-  if(saved&&typeof saved==='object'){
-    state=Object.assign(defaultState(),saved);
-    state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},saved.settings||{});
-    if(state.settings.theme==='millonario')state.settings.theme='boca';
-    if(!Array.isArray(state.settings.bottomBar)||!state.settings.bottomBar.length)state.settings.bottomBar=[...DEFAULT_BOTTOM_BAR];
-    normalizeBottomBar();
-    state.methods=Array.isArray(saved.methods)&&saved.methods.length?saved.methods:DEFAULT_METHODS.map(m=>({...m}));
-    state.cats=Array.isArray(saved.cats)&&saved.cats.length?saved.cats:DEFAULT_CATS.map(c=>({...c}));
-    if(!state.cats.some(c=>c.type==='asignacion')){DEFAULT_CATS.filter(c=>c.type==='asignacion').forEach(c=>state.cats.push({...c}))}
-    state.goals=Array.isArray(saved.goals)?saved.goals:[];state.goals.forEach(g=>{if(g.baseCurrent===undefined)g.baseCurrent=Number(g.current||0)});
-    state.cheques=Array.isArray(saved.cheques)?saved.cheques:[];
-    state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
-    state.months=saved.months&&typeof saved.months==='object'?saved.months:{};
-    state.sync=Object.assign(defaultState().sync,saved.sync||{});
-    Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
-  } else {
-    state=defaultState();ensureMonth(ui.month);persist();
-  }
+  try{
+    if(saved&&typeof saved==='object'){
+      state=Object.assign(defaultState(),saved);
+      state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},(saved.settings&&typeof saved.settings==='object')?saved.settings:{});
+      if(state.settings.theme==='millonario')state.settings.theme='boca';
+      if(!Array.isArray(state.settings.bottomBar)||!state.settings.bottomBar.length)state.settings.bottomBar=[...DEFAULT_BOTTOM_BAR];
+      normalizeBottomBar();
+      state.methods=Array.isArray(saved.methods)&&saved.methods.length?saved.methods:DEFAULT_METHODS.map(m=>({...m}));
+      state.cats=Array.isArray(saved.cats)&&saved.cats.length?saved.cats:DEFAULT_CATS.map(c=>({...c}));
+      if(!state.cats.some(c=>c.type==='asignacion')){DEFAULT_CATS.filter(c=>c.type==='asignacion').forEach(c=>state.cats.push({...c}))}
+      state.goals=Array.isArray(saved.goals)?saved.goals.filter(g=>g&&typeof g==='object'):[];state.goals.forEach(g=>{if(g.baseCurrent===undefined)g.baseCurrent=Number(g.current||0)});
+      state.cheques=Array.isArray(saved.cheques)?saved.cheques.filter(c=>c&&typeof c==='object'):[];
+      state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
+      state.months=cleanMonths(saved.months);
+      state.sync=Object.assign(defaultState().sync,(saved.sync&&typeof saved.sync==='object')?saved.sync:{});
+      Object.values(state.months).forEach(m=>m.movements.forEach(migrateMov));
+    } else {
+      state=defaultState();
+    }
+    ensureMonth(ui.month);
+  }catch(e){loadErr=e;state=defaultState();ensureMonth(ui.month)}
 
-  applyTheme(state.settings.theme||'boca');
-  applyDiscreto();
+  // La interfaz SIEMPRE se enlaza, aunque algún render falle
+  try{applyTheme(state.settings.theme||'boca')}catch(e){console.error(e)}
+  try{applyDiscreto()}catch(e){console.error(e)}
   ui.calMonth=ui.month;
-  setMonth(ui.month);
-  bindUI();
-  renderAll();
+  try{bindUI()}catch(e){loadErr=loadErr||e;console.error('bindUI',e)}
+  try{setMonth(ui.month)}catch(e){console.error(e)}
+  try{renderAll()}catch(e){console.error(e)}
+  if(loadErr)showRecovery(loadErr);
 
   window.addEventListener('beforeunload',()=>{try{storage.set(state)}catch(e){}});
 }
+window.addEventListener('error',e=>{ if(!window.__tinoBound&&document.body&&e&&e.message)showRecovery(e.message) });
 init();
 </script>
 </body>
