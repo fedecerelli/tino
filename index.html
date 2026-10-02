@@ -75,7 +75,10 @@ body.discreto .discreto-pill{display:block}
 
 .tabs{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:60;width:calc(100% - 20px);max-width:1000px;display:flex;gap:2px;padding:5px;background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);overflow-x:auto;scrollbar-width:none}
 /* Compatibilidad estable: la navegación no depende de color-mix/backdrop-filter. */
-.tabs{background:var(--sf);bottom:calc(10px + env(safe-area-inset-bottom));padding-bottom:max(5px,env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.tabs{background:var(--sf);bottom:10px;padding-bottom:5px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+@supports (bottom: env(safe-area-inset-bottom)){
+  .tabs{bottom:calc(10px + env(safe-area-inset-bottom));padding-bottom:calc(5px + env(safe-area-inset-bottom))}
+}
 
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:1;min-width:56px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 6px;border-radius:10px;color:var(--dim);font-size:.66rem;font-weight:500;white-space:nowrap;transition:var(--tr)}
@@ -84,7 +87,8 @@ body.discreto .discreto-pill{display:block}
 .tab svg{width:18px;height:18px}
 .tab span{display:block;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
-.fab{position:fixed;bottom:calc(78px + env(safe-area-inset-bottom));right:14px;z-index:59;width:56px;height:56px;border-radius:50%;background:var(--pr);color:var(--pi);box-shadow:0 8px 24px rgba(0,0,0,.3);display:grid;place-items:center;transition:var(--tr)}
+.fab{position:fixed;bottom:78px;right:14px;z-index:59;width:56px;height:56px;border-radius:50%;background:var(--pr);color:var(--pi);box-shadow:0 8px 24px rgba(0,0,0,.3);display:grid;place-items:center;transition:var(--tr)}
+@supports (bottom: env(safe-area-inset-bottom)){.fab{bottom:calc(78px + env(safe-area-inset-bottom))}}
 .fab:active{transform:scale(.94)}
 .fab svg{width:26px;height:26px}
 
@@ -432,6 +436,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
   /* Sheet ocupa casi toda la pantalla */
   .sheet{max-height:95vh;padding:14px 14px 30px}
+  @supports (height: 100dvh){.sheet{max-height:95dvh}}
+  .app{min-height:100vh}
+  @supports (min-height: 100dvh){.app{min-height:100dvh}}
 
   table.responsive thead{display:none}
   table.responsive tbody tr{display:block;border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:6px;padding:10px;background:var(--s2)}
@@ -957,14 +964,23 @@ const defaultState=()=>({
   created:new Date().toISOString()
 });
 
-const DB_NAME='presupuesto_v7',STORE='kv';let _db=null,_useIDB=false;
+const DB_NAME='presupuesto_v7',STORE='kv';const SYNC_GEN_KEY='tino_sync_generation_v1';let _db=null,_useIDB=false;
+function globalSyncGeneration(){try{return Number(localStorage.getItem(SYNC_GEN_KEY)||0)}catch(e){return 0}}
+function bumpSyncGeneration(){const n=globalSyncGeneration()+1;try{localStorage.setItem(SYNC_GEN_KEY,String(n))}catch(e){}return n}
+function ensureSyncGeneration(){state.sync=state.sync||{};const g=Math.max(Number(state.sync.generation||0),globalSyncGeneration());state.sync.generation=g;try{localStorage.setItem(SYNC_GEN_KEY,String(g))}catch(e){}return g}
 function openDB(){return new Promise((res,rej)=>{if(!('indexedDB'in window))return rej(new Error('no idb'));const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>{_db=r.result;res(_db)};r.onerror=()=>rej(r.error)})}
 const idbGet=k=>new Promise((res,rej)=>{const t=_db.transaction(STORE,'readonly').objectStore(STORE).get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error)});
 const idbSet=(k,v)=>new Promise((res,rej)=>{const t=_db.transaction(STORE,'readwrite').objectStore(STORE).put(v,k);t.onsuccess=()=>res();t.onerror=()=>rej(t.error)});
 const LS_KEY='presupuesto_v7';
 const storage={
   async get(){if(_useIDB){try{return await idbGet('state')}catch(e){}}try{const raw=localStorage.getItem(LS_KEY);return raw?JSON.parse(raw):null}catch(e){return null}},
-  async set(v){if(_useIDB){try{await idbSet('state',v);return}catch(e){}}try{localStorage.setItem(LS_KEY,JSON.stringify(v))}catch(e){}}
+  async set(v){
+    const currentGen=globalSyncGeneration();
+    const valueGen=Number(v?.sync?.generation||0);
+    if(valueGen<currentGen)return;
+    if(_useIDB){try{await idbSet('state',v);return}catch(e){}}
+    try{localStorage.setItem(LS_KEY,JSON.stringify(v))}catch(e){}
+  }
 };
 let bc=null;try{bc=new BroadcastChannel('tino_sync')}catch(e){}
 let fileHandle=null;let fileSupported=typeof window.showSaveFilePicker==='function';
@@ -972,6 +988,7 @@ let autoFileSave=true;
 let saveTimer=null;
 function persist(){
   clearTimeout(saveTimer);
+  ensureSyncGeneration();
   const revision=Date.now();
   state.sync=state.sync||{};
   state.sync.revision=Math.max(Number(state.sync.revision||0),revision);
@@ -1686,6 +1703,7 @@ async function gistPull(){
   }catch(e){toast('Error: '+e.message)}
 }
 function importStateFromObject(data){
+  const generation=bumpSyncGeneration();
   state=Object.assign(defaultState(),data);
   state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},data.settings||{});
   if(!Array.isArray(state.settings.bottomBar)||!state.settings.bottomBar.length)state.settings.bottomBar=[...DEFAULT_BOTTOM_BAR];
@@ -1696,11 +1714,13 @@ function importStateFromObject(data){
   state.cheques=Array.isArray(data.cheques)?data.cheques:[];
   state.months=data.months||{};
   state.sync=Object.assign(defaultState().sync,data.sync||{});
-  state.sync.revision=Math.max(Date.now(),Number(state.sync.revision||0));
+  state.sync.generation=generation;
+  state.sync.revision=Date.now();
   normalizeBottomBar();
   Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
   state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
   applyTheme(state.settings.theme);applyDiscreto();renderTabs();
+  if(bc){try{bc.postMessage({type:'import',generation,state,revision:state.sync.revision})}catch(e){}}
   persist();renderAll();
 }
 function updateSyncIndicator(){
@@ -2298,19 +2318,25 @@ function bindEvents(){
 
   if(bc){
     bc.addEventListener('message',async ev=>{
-      if(!ev.data||ev.data.type!=='save')return;
+      if(!ev.data||!['save','import'].includes(ev.data.type))return;
       try{
         const incoming=ev.data.state;
-        const incomingRev=Number(ev.data.revision||incoming?.sync?.revision||0);
+        if(!incoming||typeof incoming!=='object')return;
+        const incomingGen=Number(ev.data.generation||incoming.sync?.generation||0);
+        const localGen=Number(state.sync?.generation||0);
+        if(incomingGen<localGen)return;
+        const incomingRev=Number(ev.data.revision||incoming.sync?.revision||0);
         const localRev=Number(state.sync?.revision||0);
-        // No permitir que una pestaña vieja pise una importación o edición más nueva.
-        if(incoming&&incomingRev>=localRev){
-          state=Object.assign(defaultState(),incoming);
-          state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},state.settings||{});
-          normalizeBottomBar();
-          Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
-          applyTheme(state.settings.theme);applyDiscreto();renderAll();toast('Sincronizado');
-        }
+        if(ev.data.type==='save' && incomingGen===localGen && incomingRev<localRev)return;
+        state=Object.assign(defaultState(),incoming);
+        state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},state.settings||{});
+        state.sync=Object.assign(defaultState().sync,incoming.sync||{});
+        state.sync.generation=incomingGen;
+        normalizeBottomBar();
+        Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
+        applyTheme(state.settings.theme);applyDiscreto();renderAll();
+        try{localStorage.setItem(SYNC_GEN_KEY,String(incomingGen))}catch(e){}
+        if(ev.data.type==='import')toast('Datos importados y sincronizados');
       }catch(e){}
     });
   }
