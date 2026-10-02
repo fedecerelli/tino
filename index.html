@@ -485,9 +485,21 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 #report .dot{display:none}
 #report svg{max-width:100%}
 #report .chart-box svg{filter:grayscale(.45) contrast(1.02)}
+
+/* Puerta de recuperación: independiente de la navegación inferior. */
+.emergency-import{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:100000;display:block;pointer-events:auto}
+.emergency-import-btn{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border:1px solid rgba(0,0,0,.18);border-radius:12px;background:#fff;color:#111;font:700 13px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.18);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.emergency-import-btn:active{transform:translateY(1px)}
+@media (max-width:720px){.emergency-import{top:max(8px,env(safe-area-inset-top));right:8px}.emergency-import-btn{min-height:44px;padding:0 11px;border-radius:11px;font-size:12px}.emergency-import-btn span{display:inline}}
+@media print{.emergency-import{display:none!important}}
 </style>
 </head>
 <body>
+
+<div id="emergencyImport" class="emergency-import" aria-label="Recuperar datos">
+  <label for="fileImportEmergency" class="emergency-import-btn">↥ <span>Importar / recuperar JSON</span></label>
+  <input type="file" id="fileImportEmergency" accept=".json,application/json" hidden>
+</div>
 
 <div class="discreto-pill" id="discretoPill">● MODO DISCRETO</div>
 
@@ -2303,6 +2315,7 @@ function bindEvents(){
   $('#btnExportCsv').addEventListener('click',exportCSV);
   $('#btnImport').addEventListener('click',()=>$('#fileImport').click());
   $('#fileImport').addEventListener('change',e=>{const f=e.target.files[0];if(f)importJSON(f);e.target.value=''});
+  $('#fileImportEmergency')?.addEventListener('change',e=>{const f=e.target.files[0];if(f)importJSON(f);e.target.value=''});
   $('#btnReset').addEventListener('click',()=>{
     if(!confirm('Se borrarán TODOS los datos. ¿Continuar?'))return;
     state=defaultState();ensureMonth(ui.month);fileHandle=null;
