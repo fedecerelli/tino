@@ -310,7 +310,8 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
 .deadline-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:.65rem;font-weight:600;font-family:var(--mono)}
 .deadline-ok{background:color-mix(in srgb,var(--ok) 15%,var(--s2));color:var(--ok)}
 .deadline-warn{background:color-mix(in srgb,var(--wn) 15%,var(--s2));color:var(--wn)}
-.deadline-bad{background:color-mix(in srgb,var(--bd2) 15%,var(--s2));color:var(--bd2)}
+ .deadline-bad{background:color-mix(in srgb,var(--bd2) 15%,var(--s2));color:var(--bd2)}
+.allocation-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;background:color-mix(in srgb,var(--ac) 14%,var(--s2));color:var(--ac);font-size:.66rem;font-weight:600}
 
 .goal{display:grid;grid-template-columns:80px 1fr auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--bd);border-radius:var(--r);background:var(--s2);margin-bottom:8px}
 .goal-ring{width:80px;height:80px;position:relative}
@@ -368,8 +369,9 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
 .sync-status.warn{border-left:3px solid var(--wn)}
 .sync-status.info{border-left:3px solid var(--pr)}
 
-.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(120%);background:var(--tx);color:var(--bg);padding:9px 18px;border-radius:99px;font-weight:500;font-size:.82rem;z-index:200;transition:transform .25s ease;pointer-events:none;max-width:90vw}
-.toast.show{transform:translateX(-50%) translateY(0)}
+ .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,120%);background:var(--tx);color:var(--bg);padding:9px 18px;border-radius:99px;font-weight:500;font-size:.82rem;z-index:200;transition:transform .25s ease,opacity .2s ease;pointer-events:none;max-width:min(90vw,520px);opacity:0;visibility:hidden}
+.toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
+
 
 .sim-result{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:10px}
 .sim-box{background:var(--s2);border-radius:var(--rs);padding:10px;text-align:center;border:1px solid var(--bd)}
@@ -402,7 +404,7 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
   .cal-dow{font-size:.6rem}
   .tab{font-size:.6rem;padding:6px 4px}
   .tab svg{width:20px;height:20px}
-  .fab.show{display:grid}
+  .fab{display:grid}
 
   /* Ocultar formulario inline de escritorio y mostrar botón de captura */
   #qaBox{display:none}
@@ -525,6 +527,12 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
       <div class="qa-catchips" id="sheetChips"></div>
     </div>
 
+    <div class="qa-field" id="sheetAllocationField" hidden>
+      <label for="sheetAllocation">Usar asignación</label>
+      <select id="sheetAllocation"></select>
+      <div style="font-size:.7rem;color:var(--dim);margin-top:4px">El gasto se descuenta de una asignación existente.</div>
+    </div>
+
     <details class="qa-details" id="qaDetails">
       <summary>Más opciones (medio, fecha, vencimiento)</summary>
       <div class="details-content">
@@ -586,6 +594,7 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
         <div class="qa-row"><div class="chips" id="qaChips"></div></div>
         <div class="qa-row">
           <select id="qaMethod" style="flex:1 1 130px"></select>
+          <select id="qaAllocation" style="flex:1 1 190px;display:none"></select>
           <input class="qa-date" type="date" id="qaDate">
           <input class="qa-date" type="date" id="qaDue">
           <label class="qa-check" id="qaPaidLabel" style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--dim);cursor:pointer;white-space:nowrap"><input type="checkbox" id="qaPaid"> Pagado</label>
@@ -651,6 +660,8 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
         <div class="qa-row" style="margin-top:6px">
           <input class="qa-date" type="date" id="chqIssue">
           <input class="qa-date" type="date" id="chqDue">
+          <input id="chqDeliveredTo" placeholder="Entregado a">
+          <input class="qa-date" type="date" id="chqDeliveredDate" title="Fecha de entrega">
           <select id="chqType" style="flex:0 0 150px" title="Común: 30 días para cobrar. Diferido: 1 año.">
             <option value="comun">Común (30d plazo)</option>
             <option value="diferido">Diferido (1 año)</option>
@@ -810,7 +821,12 @@ function onMoneyInput(e){
 }
 const attachMoney=el=>el&&el.addEventListener('input',onMoneyInput);
 let toastT;
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+function toast(msg){
+  const t=$('#toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>{t.classList.remove('show');t.textContent=''},2200);
+}
 async function copyText(txt){
   try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(txt);return true}
     const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
@@ -965,7 +981,7 @@ const ui={
   calDay:null,
   editId:null,
   filters:{q:'',type:'',cat:'',method:'',paid:''},
-  qa:{type:'gasto',cat:null,method:'mp',more:false},
+  qa:{type:'gasto',cat:null,method:'mp',allocationId:'',more:false},
   sim:{target:0,current:0,monthly:0,rate:0},
   newMethod:{name:'',icon:'wallet'},
   newCat:{name:'',type:'gasto',group:'necesidad',color:1},
@@ -992,6 +1008,8 @@ function movState(m){
   return ps;
 }
 function migrateMov(m){
+  if(m.allocationId===undefined)m.allocationId=null;
+  if(m.goalId===undefined)m.goalId=null;
   if(!m.payState)m.payState=m.paid?'pagado':'pendiente';
   if(m.dueDate===undefined)m.dueDate=null;
   delete m.paid;return m;
@@ -1032,6 +1050,36 @@ function frequentConcepts(limit=10){
     map.set(k,rec);
   }));
   return Array.from(map.entries()).map(([name,d])=>({name,...d})).sort((a,b)=>b.count-a.count).slice(0,limit);
+}
+function assignmentMovements(){
+  return Object.entries(state.months).flatMap(([monthKey,m])=>(m.movements||[])
+    .filter(x=>x.type==='asignacion')
+    .map(x=>({...x,_monthKey:monthKey})))
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+function allocationUsed(id){
+  let used=0;
+  Object.values(state.months).forEach(m=>(m.movements||[]).forEach(x=>{
+    if(x.type==='gasto' && x.allocationId===id) used+=Number(x.amount||0);
+  }));
+  return used;
+}
+function allocationRemaining(id){
+  const a=Object.values(state.months).flatMap(m=>m.movements||[]).find(x=>x.id===id && x.type==='asignacion');
+  return a?Math.max(0,Number(a.amount||0)-allocationUsed(id)):0;
+}
+function renderAllocationOptions(select, selected=''){
+  if(!select)return;
+  const opts=assignmentMovements().map(a=>{
+    const rem=allocationRemaining(a.id);
+    const label=`${a.concept} · ${money(rem,0)} disponible · ${a.date||''}${a._monthKey&&a._monthKey!==ui.month?' · '+ymLabel(a._monthKey):''}`;
+    return `<option value="${a.id}" ${a.id===selected?'selected':''} ${rem<=0?'disabled':''}>${esc(label)}</option>`;
+  }).join('');
+  select.innerHTML=`<option value="">Sin asignación</option>${opts}`;
+}
+function assignmentForExpense(m){
+  if(!m.allocationId)return null;
+  return Object.values(state.months).flatMap(x=>x.movements||[]).find(x=>x.id===m.allocationId && x.type==='asignacion')||null;
 }
 function chequeTotals(){
   const c=state.cheques||[];
@@ -1176,6 +1224,12 @@ function renderQuickAdd(){
   $('#qaFreq').innerHTML=frec.map(f=>`<button type="button" class="chip" data-freq="${esc(f.name)}">${esc(f.name)}</button>`).join('');
   const curM=$('#qaMethod').value;
   $('#qaMethod').innerHTML=state.methods.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  const allocSel=$('#qaAllocation');
+  if(allocSel){
+    const show=type==='gasto' && assignmentMovements().length>0;
+    allocSel.style.display=show?'block':'none';
+    renderAllocationOptions(allocSel,ui.qa.allocationId||'');
+  }
   if(state.methods.some(m=>m.id===curM))$('#qaMethod').value=curM;
   else if(ui.qa.method&&state.methods.some(m=>m.id===ui.qa.method))$('#qaMethod').value=ui.qa.method;
   else if(state.methods.some(m=>m.id==='mp'))$('#qaMethod').value='mp';
@@ -1205,7 +1259,7 @@ function renderMovTable(){
     return `<tr class="${st==='pagado'?'done':''} ${isEd?'editing':''}">
       <td data-l="Estado">${isG?`<button class="state-btn state-${st}" data-act="cycleState" data-id="${m.id}">${icon(stateIconName(st),12)}<span>${stateLabel(st)}</span></button>`:`<span class="state-btn state-pagado">${lbl[m.type]}</span>`}</td>
       <td data-l="Fecha"><div>${esc(m.date||'—')}</div>${m.dueDate?`<div style="font-size:.7rem;color:${st==='vencido'?'var(--bd2)':'var(--dim)'}">Vence ${esc(m.dueDate)}</div>`:''}</td>
-      <td class="concept" data-l="Concepto"><div style="font-weight:600">${esc(m.concept)}</div>${m.note?`<div style="color:var(--dim);font-size:.72rem">${esc(m.note)}</div>`:''}</td>
+      <td class="concept" data-l="Concepto"><div style="font-weight:600">${esc(m.concept)}</div>${m.allocationId?`<div><span class="allocation-badge">${icon('wallet',10)} ${esc((assignmentForExpense(m)||{}).concept||'Asignación')}</span></div>`:''}${m.note?`<div style="color:var(--dim);font-size:.72rem">${esc(m.note)}</div>`:''}</td>
       <td data-l="Categoría"><span style="color:var(--dim);font-size:.78rem">${esc(catName(m.cat))}</span></td>
       <td data-l="Medio">${isG?`<select class="mini-select" data-act="setMethod" data-id="${m.id}">${meth}</select>`:`<span style="color:var(--dim);font-size:.78rem">${esc(methodName(m.method))}</span>`}</td>
       <td class="num amt ${m.type==='ingreso'?'pos':m.type==='gasto'?'neg':''}" data-l="Monto">${m.type==='ingreso'?'+':m.type==='ahorro'||m.type==='asignacion'?'→':'−'} ${money(m.amount)}</td>
@@ -1407,6 +1461,7 @@ function renderCheques(){
       <td data-l="N° / Banco"><div style="font-weight:600">${esc(c.number||'—')}</div><div style="font-size:.72rem;color:var(--dim)">${esc(c.bank||'')} · ${c.chequeType==='diferido'?'Diferido':'Común'}</div></td>
       <td data-l="Emisor">${esc(c.issuer||'—')}</td>
       <td data-l="Recepción">${esc(c.issueDate||'—')}</td>
+      <td data-l="Entregado">${c.deliveredTo?`<div>${esc(c.deliveredTo)}</div><div style="font-size:.68rem;color:var(--dim)">${esc(c.deliveredDate||'—')}</div>`:'—'}</td>
       <td data-l="Cobro">${esc(c.dueDate||'—')}</td>
       <td data-l="Plazo legal"><span class="deadline-badge ${dlClass}">${esc(dlText)}</span></td>
       <td data-l="Estado"><select class="mini-select" data-act="chqStatus" data-id="${c.id}">${Object.entries(statusLbl).map(([k,v])=>`<option value="${k}" ${c.status===k?'selected':''}>${v}</option>`).join('')}</select></td>
@@ -1855,7 +1910,7 @@ function resetQA(){
   $('#qaConcept').value='';$('#qaAmount').value='';$('#qaNote').value='';
   $('#qaDue').value=dueDateFor(ui.month);$('#qaDate').value=todayISO();
   $('#qaPaid').checked=false;
-  ui.qa.type='gasto';ui.qa.method='mp';
+  ui.qa.type='gasto';ui.qa.method='mp';ui.qa.allocationId='';
   $$('#qaType button').forEach(b=>b.classList.toggle('active',b.dataset.type==='gasto'));
   const cats=state.cats.filter(c=>c.type==='gasto');
   ui.qa.cat=cats.length?cats[0].id:null;
@@ -1867,7 +1922,7 @@ function resetQA(){
 }
 function loadMovIntoEditor(id){
   const m=ensureMonth(ui.month).movements.find(x=>x.id===id);if(!m)return;
-  ui.editId=id;ui.qa.type=m.type;ui.qa.cat=m.cat;ui.qa.method=m.method;
+  ui.editId=id;ui.qa.type=m.type;ui.qa.cat=m.cat;ui.qa.method=m.method;ui.qa.allocationId=m.allocationId||'';
   $$('#qaType button').forEach(b=>b.classList.toggle('active',b.dataset.type===m.type));
   $('#qaPaidLabel').style.display=m.type==='gasto'?'':'none';
   $('#qaConcept').value=m.concept;$('#qaAmount').value=nf(m.amount,2);
@@ -1885,9 +1940,12 @@ function submitMovement(){
   if(!concept){toast('Escribí un concepto');$('#qaConcept').focus();return}
   if(amount<=0){toast('Monto mayor a cero');$('#qaAmount').focus();return}
   const m=ensureMonth(ui.month);
+  const allocationId=ui.qa.type==='gasto'?($('#qaAllocation').value||''):null;
+  const oldAllocation=ui.editId?(m.movements.find(x=>x.id===ui.editId)||{}).allocationId:null;
+  if(allocationId && allocationId!==oldAllocation && allocationRemaining(allocationId)<amount){toast('La asignación no tiene saldo suficiente');return}
   const payload={id:ui.editId||uid(),type:ui.qa.type,concept,cat:ui.qa.cat,amount,
     method:$('#qaMethod').value,date:$('#qaDate').value||todayISO(),dueDate:$('#qaDue').value||null,
-    payState:ui.qa.type==='gasto'?($('#qaPaid').checked?'pagado':'pendiente'):'pagado',note:$('#qaNote').value.trim()};
+    allocationId,payState:ui.qa.type==='gasto'?($('#qaPaid').checked?'pagado':'pendiente'):'pagado',note:$('#qaNote').value.trim()};
   if(ui.editId){const i=m.movements.findIndex(x=>x.id===ui.editId);if(i>=0)m.movements[i]=payload;toast('Actualizado')}
   else{m.movements.push(payload);toast('Agregado')}
   persist();resetQA();renderAll();
@@ -1911,6 +1969,12 @@ function renderSheetQA(){
   const cats=state.cats.filter(c=>c.type===ui.qa.type);
   if(!ui.qa.cat||!cats.some(c=>c.id===ui.qa.cat))ui.qa.cat=cats.length?cats[0].id:null;
   $('#sheetChips').innerHTML=cats.map(c=>`<button type="button" data-sheet-cat="${c.id}" class="${c.id===ui.qa.cat?'active':''}"><i class="cdot" style="background:var(--c${c.color||1})"></i>${esc(c.name)}</button>`).join('');
+  const allocField=$('#sheetAllocationField'),allocSel=$('#sheetAllocation');
+  if(allocField&&allocSel){
+    const show=ui.qa.type==='gasto' && assignmentMovements().length>0;
+    allocField.hidden=!show;
+    renderAllocationOptions(allocSel,ui.qa.allocationId||'');
+  }
   const frec=frequentConcepts(10);
   $('#sheetFrec').innerHTML=frec.map(f=>`<button type="button" data-sheet-frec="${esc(f.name)}">${esc(f.name)}</button>`).join('')||'<span style="font-size:.75rem;color:var(--dim)">Los conceptos que más usás aparecen acá para autocompletar</span>';
   $('#sheetConceptList').innerHTML=allConcepts().map(c=>`<option value="${esc(c)}"></option>`).join('');
@@ -1926,11 +1990,14 @@ function submitFromSheet(){
   if(!concept){toast('Escribí un concepto');$('#sheetConcept').focus();return}
   if(amount<=0){toast('Monto mayor a cero');$('#sheetAmount').focus();return}
   const m=ensureMonth(ui.month);
+  const allocationId=ui.qa.type==='gasto'?($('#sheetAllocation').value||''):null;
+  if(allocationId && allocationRemaining(allocationId)<amount){toast('La asignación no tiene saldo suficiente');return}
   m.movements.push({
     id:uid(),type:ui.qa.type,concept,cat:ui.qa.cat,amount,
     method:$('#sheetMethod').value||'mp',
     date:$('#sheetDate').value||todayISO(),
     dueDate:$('#sheetDue').value||null,
+    allocationId,
     payState:ui.qa.type==='gasto'?'pendiente':'pagado',
     note:$('#sheetNote').value.trim()
   });
@@ -1974,9 +2041,10 @@ function addCheque(){
     id:uid(),number:$('#chqNum').value.trim(),bank:$('#chqBank').value.trim(),
     issuer:titleCase($('#chqIssuer').value||''),amount,
     issueDate:$('#chqIssue').value||null,dueDate:$('#chqDue').value||null,
+    deliveredTo:titleCase($('#chqDeliveredTo').value||''),deliveredDate:$('#chqDeliveredDate').value||null,
     chequeType:$('#chqType').value,status:$('#chqStatus').value,note:$('#chqNote').value.trim()
   });
-  persist();['#chqNum','#chqBank','#chqIssuer','#chqAmount','#chqNote'].forEach(s=>$(s).value='');
+  persist();['#chqNum','#chqBank','#chqIssuer','#chqAmount','#chqDeliveredTo','#chqNote'].forEach(s=>$(s).value='');$('#chqDeliveredDate').value='';
   renderAll();toast('Cheque agregado');
 }
 function allConcepts(){
@@ -2021,6 +2089,9 @@ function bindEvents(){
       }
       return;
     }
+    if(t.id==='qaAllocation'){ui.qa.allocationId=t.value;return}
+    if(t.id==='sheetAllocation'){ui.qa.allocationId=t.value;return}
+
     const mvSheet=t.closest('#sheetMoreGrid button[data-view]');
     if(mvSheet){switchView(mvSheet.dataset.view);closeSheets();return}
 
@@ -2249,9 +2320,9 @@ function exportCSV(){
     });
   });
   rows.push([]);rows.push(['CHEQUES']);
-  rows.push(['N°','Banco','Emisor','Tipo','Recepción','Cobro','Plazo legal','Estado','Monto','Nota']);
+  rows.push(['N°','Banco','Emisor','Tipo','Recepción','Entregado a','Fecha entrega','Cobro','Plazo legal','Estado','Monto','Nota']);
   (state.cheques||[]).forEach(c=>{
-    rows.push([c.number||'',c.bank||'',c.issuer||'',c.chequeType||'comun',c.issueDate||'',c.dueDate||'',chequeDeadline(c)||'',c.status,String(c.amount).replace('.',','),c.note||'']);
+    rows.push([c.number||'',c.bank||'',c.issuer||'',c.chequeType||'comun',c.issueDate||'',c.deliveredTo||'',c.deliveredDate||'',c.dueDate||'',chequeDeadline(c)||'',c.status,String(c.amount).replace('.',','),c.note||'']);
   });
   const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
   downloadFile(`tino-${todayISO()}.csv`,csv,'text/csv;charset=utf-8');toast('CSV exportado');
@@ -2321,8 +2392,8 @@ function buildReportHTML(){
     </div>
     ${chq.length?`<div class="rep-section"><h2>05 · CHEQUES</h2>
       <p class="rep-note">CARTERA: <b>${money(chqT.cartera,0)}</b> · DEPOSITADO: <b>${money(chqT.depositado,0)}</b> · COBRADO: <b>${money(chqT.cobrado,0)}</b> · RECHAZADO: <b>${money(chqT.rechazado,0)}</b></p>
-      <table><thead><tr><th>N°</th><th>BANCO</th><th>EMISOR</th><th>TIPO</th><th>RECEP.</th><th>COBRO</th><th>PLAZO LEGAL</th><th>ESTADO</th><th class="num">MONTO</th></tr></thead>
-        <tbody>${chq.map(c=>{const info=chequeInfo(c);return `<tr><td>${esc(c.number||'—')}</td><td>${esc(c.bank||'—')}</td><td>${esc(c.issuer||'—')}</td><td>${c.chequeType==='diferido'?'Diferido':'Común'}</td><td>${esc(c.issueDate||'—')}</td><td>${esc(c.dueDate||'—')}</td><td>${esc(info.deadline||'—')} ${info.label==='Prescripto'?'⚠':''}</td><td>${esc(c.status)}</td><td class="num">${money(c.amount,0)}</td></tr>`}).join('')}</tbody></table>
+      <table><thead><tr><th>N°</th><th>BANCO</th><th>EMISOR</th><th>TIPO</th><th>RECEP.</th><th>ENTREGADO A</th><th>F. ENTREGA</th><th>COBRO</th><th>PLAZO LEGAL</th><th>ESTADO</th><th class="num">MONTO</th></tr></thead>
+        <tbody>${chq.map(c=>{const info=chequeInfo(c);return `<tr><td>${esc(c.number||'—')}</td><td>${esc(c.bank||'—')}</td><td>${esc(c.issuer||'—')}</td><td>${c.chequeType==='diferido'?'Diferido':'Común'}</td><td>${esc(c.issueDate||'—')}</td><td>${esc(c.deliveredTo||'—')}</td><td>${esc(c.deliveredDate||'—')}</td><td>${esc(c.dueDate||'—')}</td><td>${esc(info.deadline||'—')} ${info.label==='Prescripto'?'⚠':''}</td><td>${esc(c.status)}</td><td class="num">${money(c.amount,0)}</td></tr>`}).join('')}</tbody></table>
     </div>`:''}
     <div class="rep-section"><h2>06 · METAS Y PROYECCIONES</h2>
       ${state.goals.length?`<table><thead><tr><th>META</th><th class="num">OBJETIVO</th><th class="num">ACUM.</th><th class="num">%</th><th class="num">FALTA</th></tr></thead>
