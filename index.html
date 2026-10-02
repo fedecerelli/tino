@@ -74,6 +74,9 @@ body.discreto .discreto-pill{display:block}
 .discreto-btn.active{background:var(--wn);color:var(--pi);border-color:var(--wn)}
 
 .tabs{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:60;width:calc(100% - 20px);max-width:1000px;display:flex;gap:2px;padding:5px;background:color-mix(in srgb,var(--sf) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);overflow-x:auto;scrollbar-width:none}
+/* Compatibilidad estable: la navegación no depende de color-mix/backdrop-filter. */
+.tabs{background:var(--sf);bottom:calc(10px + env(safe-area-inset-bottom));padding-bottom:max(5px,env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:1;min-width:56px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 6px;border-radius:10px;color:var(--dim);font-size:.66rem;font-weight:500;white-space:nowrap;transition:var(--tr)}
 .tab:hover{color:var(--tx);background:var(--s2)}
@@ -81,13 +84,13 @@ body.discreto .discreto-pill{display:block}
 .tab svg{width:18px;height:18px}
 .tab span{display:block;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
-.fab{position:fixed;bottom:78px;right:14px;z-index:59;width:56px;height:56px;border-radius:50%;background:var(--pr);color:var(--pi);box-shadow:0 8px 24px rgba(0,0,0,.3);display:grid;place-items:center;transition:var(--tr)}
+.fab{position:fixed;bottom:calc(78px + env(safe-area-inset-bottom));right:14px;z-index:59;width:56px;height:56px;border-radius:50%;background:var(--pr);color:var(--pi);box-shadow:0 8px 24px rgba(0,0,0,.3);display:grid;place-items:center;transition:var(--tr)}
 .fab:active{transform:scale(.94)}
 .fab svg{width:26px;height:26px}
 
 .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s ease}
 .sheet-backdrop.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;bottom:0;left:0;right:0;z-index:81;background:var(--sf);border-top:1px solid var(--bd);border-radius:20px 20px 0 0;padding:14px 14px 24px;max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -8px 32px rgba(0,0,0,.35)}
+.sheet{position:fixed;bottom:0;left:0;right:0;z-index:81;background:var(--sf);border-top:1px solid var(--bd);border-radius:20px 20px 0 0;padding:14px 14px 24px;max-height:92vh;max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform .25s ease;box-shadow:0 -8px 32px rgba(0,0,0,.35)}
 .sheet.show{transform:translateY(0)}
 .sheet-handle{width:38px;height:4px;border-radius:2px;background:var(--bd);margin:0 auto 12px;display:block}
 .sheet h3{font-size:.9rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -373,7 +376,15 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
 .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--pr) 55%,transparent);outline-offset:2px}
 .funding-strip{display:flex;gap:8px;flex-wrap:wrap}.funding-strip span{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid var(--bd);border-radius:999px;background:var(--s2);font-size:.76rem;color:var(--dim)}.funding-strip b{color:var(--tx);font-family:var(--mono)}
-@media(max-width:720px){.icon-btn,.state-btn{min-width:40px;min-height:40px}.qa-row select,.qa-row input{min-height:42px}#view-mov .card .qa-row{display:grid;grid-template-columns:1fr 1fr}#view-mov .card .qa-row #fSearch{grid-column:1/-1}#view-chq .qa-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}#view-chq .qa-row:nth-of-type(2)>*{width:100%!important;min-width:0!important}#view-chq #chqAdd{grid-column:1/-1}.sheet select,.sheet input{min-height:44px}.goal-edit{grid-template-columns:1fr}}
+@media(max-width:720px){
+  html,body{min-height:100%;overflow-x:hidden}
+  .app{min-height:100dvh;min-height:100vh;padding-bottom:92px}
+  .tabs{left:8px;right:8px;transform:none;width:auto;max-width:none;bottom:calc(8px + env(safe-area-inset-bottom));border-radius:14px}
+  .tab{flex:0 0 72px}
+  .fab{right:14px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:65}
+  .sheet{padding-bottom:max(24px,calc(24px + env(safe-area-inset-bottom)))}
+
+  .icon-btn,.state-btn{min-width:40px;min-height:40px}.qa-row select,.qa-row input{min-height:42px}#view-mov .card .qa-row{display:grid;grid-template-columns:1fr 1fr}#view-mov .card .qa-row #fSearch{grid-column:1/-1}#view-chq .qa-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}#view-chq .qa-row:nth-of-type(2)>*{width:100%!important;min-width:0!important}#view-chq #chqAdd{grid-column:1/-1}.sheet select,.sheet input{min-height:44px}.goal-edit{grid-template-columns:1fr}}
 
 
 .sim-result{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:10px}
@@ -961,10 +972,13 @@ let autoFileSave=true;
 let saveTimer=null;
 function persist(){
   clearTimeout(saveTimer);
+  const revision=Date.now();
+  state.sync=state.sync||{};
+  state.sync.revision=Math.max(Number(state.sync.revision||0),revision);
   saveTimer=setTimeout(async()=>{
     let copy;try{copy=structuredClone(state)}catch(e){copy=JSON.parse(JSON.stringify(state))}
     try{await storage.set(copy)}catch(e){}
-    if(bc){try{bc.postMessage({type:'save',ts:Date.now()})}catch(e){}}
+    if(bc){try{bc.postMessage({type:'save',ts:revision,revision:copy.sync?.revision||revision,state:copy})}catch(e){}}
     if(fileHandle&&autoFileSave){
       try{const w=await fileHandle.createWritable();await w.write(JSON.stringify(state,null,2));await w.close();
         state.sync.lastSave=new Date().toISOString();updateSyncIndicator();
@@ -1682,6 +1696,8 @@ function importStateFromObject(data){
   state.cheques=Array.isArray(data.cheques)?data.cheques:[];
   state.months=data.months||{};
   state.sync=Object.assign(defaultState().sync,data.sync||{});
+  state.sync.revision=Math.max(Date.now(),Number(state.sync.revision||0));
+  normalizeBottomBar();
   Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
   state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
   applyTheme(state.settings.theme);applyDiscreto();renderTabs();
@@ -2282,11 +2298,20 @@ function bindEvents(){
 
   if(bc){
     bc.addEventListener('message',async ev=>{
-      if(ev.data&&ev.data.type==='save'){
-        try{const saved=await storage.get();
-          if(saved){state=Object.assign(defaultState(),saved);Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));applyTheme(state.settings.theme);applyDiscreto();renderTabs();renderAll();toast('Sync desde otra pestaña')}
-        }catch(e){}
-      }
+      if(!ev.data||ev.data.type!=='save')return;
+      try{
+        const incoming=ev.data.state;
+        const incomingRev=Number(ev.data.revision||incoming?.sync?.revision||0);
+        const localRev=Number(state.sync?.revision||0);
+        // No permitir que una pestaña vieja pise una importación o edición más nueva.
+        if(incoming&&incomingRev>=localRev){
+          state=Object.assign(defaultState(),incoming);
+          state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},state.settings||{});
+          normalizeBottomBar();
+          Object.values(state.months).forEach(m=>(m.movements||[]).forEach(migrateMov));
+          applyTheme(state.settings.theme);applyDiscreto();renderAll();toast('Sincronizado');
+        }
+      }catch(e){}
     });
   }
 }
