@@ -371,6 +371,9 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
 
  .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,120%);background:var(--tx);color:var(--bg);padding:9px 18px;border-radius:99px;font-weight:500;font-size:.82rem;z-index:200;transition:transform .25s ease,opacity .2s ease;pointer-events:none;max-width:min(90vw,520px);opacity:0;visibility:hidden}
 .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--pr) 55%,transparent);outline-offset:2px}
+.funding-strip{display:flex;gap:8px;flex-wrap:wrap}.funding-strip span{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid var(--bd);border-radius:999px;background:var(--s2);font-size:.76rem;color:var(--dim)}.funding-strip b{color:var(--tx);font-family:var(--mono)}
+@media(max-width:720px){.icon-btn,.state-btn{min-width:40px;min-height:40px}.qa-row select,.qa-row input{min-height:42px}#view-mov .card .qa-row{display:grid;grid-template-columns:1fr 1fr}#view-mov .card .qa-row #fSearch{grid-column:1/-1}#view-chq .qa-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}#view-chq .qa-row:nth-of-type(2)>*{width:100%!important;min-width:0!important}#view-chq #chqAdd{grid-column:1/-1}.sheet select,.sheet input{min-height:44px}.goal-edit{grid-template-columns:1fr}}
 
 
 .sim-result{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:10px}
@@ -527,11 +530,9 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
       <div class="qa-catchips" id="sheetChips"></div>
     </div>
 
-    <div class="qa-field" id="sheetAllocationField" hidden>
-      <label for="sheetAllocation">Usar asignación</label>
-      <select id="sheetAllocation"></select>
-      <div style="font-size:.7rem;color:var(--dim);margin-top:4px">El gasto se descuenta de una asignación existente.</div>
-    </div>
+    <div class="qa-field" id="sheetFundingField" hidden><label for="sheetFunding">Usar dinero de</label><select id="sheetFunding"></select><div style="font-size:.7rem;color:var(--dim);margin-top:4px">Asignación, meta o ahorro disponible.</div></div>
+    <div class="qa-field" id="sheetGoalField" hidden><label for="sheetGoal">Vincular ahorro con meta</label><select id="sheetGoal"></select></div>
+    <div class="qa-field" id="sheetChequeField" hidden><label for="sheetCheque">Cheque disponible</label><select id="sheetCheque"></select></div>
 
     <details class="qa-details" id="qaDetails">
       <summary>Más opciones (medio, fecha, vencimiento)</summary>
@@ -560,7 +561,7 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
 
   <main>
     <section class="view active" id="view-panel" role="tabpanel">
-      <div class="kpis" id="kpis"></div>
+      <div class="kpis" id="kpis"></div><div class="card" id="fundingSummary" style="margin-bottom:8px"></div>
       <div class="grid g2">
         <div class="card"><div class="card-title" id="hBars"></div><div class="chart-box" id="chartBars"></div></div>
         <div class="card"><div class="card-title" id="hDonut"></div><div class="chart-box" id="chartDonut"></div><div class="legend" id="legendDonut"></div></div>
@@ -594,7 +595,7 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
         <div class="qa-row"><div class="chips" id="qaChips"></div></div>
         <div class="qa-row">
           <select id="qaMethod" style="flex:1 1 130px"></select>
-          <select id="qaAllocation" style="flex:1 1 190px;display:none"></select>
+          <select id="qaFunding" style="flex:1 1 220px;display:none"></select><select id="qaGoal" style="flex:1 1 190px;display:none"></select><select id="qaCheque" style="flex:1 1 210px;display:none"></select>
           <input class="qa-date" type="date" id="qaDate">
           <input class="qa-date" type="date" id="qaDue">
           <label class="qa-check" id="qaPaidLabel" style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--dim);cursor:pointer;white-space:nowrap"><input type="checkbox" id="qaPaid"> Pagado</label>
@@ -769,7 +770,7 @@ td.num.pos{color:var(--ok)}td.num.neg{color:var(--bd2)}
   </main>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="report"></div>
 
 <script>
@@ -981,7 +982,7 @@ const ui={
   calDay:null,
   editId:null,
   filters:{q:'',type:'',cat:'',method:'',paid:''},
-  qa:{type:'gasto',cat:null,method:'mp',allocationId:'',more:false},
+  qa:{type:'gasto',cat:null,method:'mp',funding:'',goalId:'',chequeId:'',more:false},
   sim:{target:0,current:0,monthly:0,rate:0},
   newMethod:{name:'',icon:'wallet'},
   newCat:{name:'',type:'gasto',group:'necesidad',color:1},
@@ -1010,6 +1011,7 @@ function movState(m){
 function migrateMov(m){
   if(m.allocationId===undefined)m.allocationId=null;
   if(m.goalId===undefined)m.goalId=null;
+  if(m.fundingKind===undefined)m.fundingKind=m.allocationId?'asignacion':null;if(m.fundingId===undefined)m.fundingId=m.allocationId||null;if(m.chequeId===undefined)m.chequeId=null;
   if(!m.payState)m.payState=m.paid?'pagado':'pendiente';
   if(m.dueDate===undefined)m.dueDate=null;
   delete m.paid;return m;
@@ -1077,6 +1079,16 @@ function renderAllocationOptions(select, selected=''){
   }).join('');
   select.innerHTML=`<option value="">Sin asignación</option>${opts}`;
 }
+function goalBase(g){return Number(g.baseCurrent===undefined?g.current||0:g.baseCurrent)||0}
+function goalBalance(g){let n=goalBase(g);Object.values(state.months).forEach(m=>(m.movements||[]).forEach(x=>{if(x.type==='ahorro'&&x.goalId===g.id)n+=Number(x.amount||0);if(x.type==='gasto'&&x.fundingKind==='meta'&&x.fundingId===g.id)n-=Number(x.amount||0)}));return Math.max(0,n)}
+function generalSavingsBalance(){let n=0;Object.values(state.months).forEach(m=>(m.movements||[]).forEach(x=>{if(x.type==='ahorro'&&!x.goalId)n+=Number(x.amount||0);if(x.type==='gasto'&&x.fundingKind==='ahorro')n-=Number(x.amount||0)}));return Math.max(0,n)}
+function availableGoals(){return state.goals.map(g=>({...g,balance:goalBalance(g)})).filter(g=>g.balance>0)}
+function availableCheques(){const used=new Set(Object.values(state.months).flatMap(m=>m.movements||[]).filter(x=>x.type==='gasto'&&x.chequeId).map(x=>x.chequeId));return (state.cheques||[]).filter(c=>(c.status==='cartera'||c.status==='depositado')&&!used.has(c.id))}
+function renderFundingOptions(sel,val=''){if(!sel)return;const parts=[];const a=assignmentMovements();a.forEach(x=>{const r=allocationRemaining(x.id);if(r>0)parts.push(['asignacion:'+x.id,'Asignación · '+x.concept+' · '+money(r,0)])});availableGoals().forEach(g=>parts.push(['meta:'+g.id,'Meta · '+g.name+' · '+money(g.balance,0)]));if(generalSavingsBalance()>0)parts.push(['ahorro:general','Ahorro · '+money(generalSavingsBalance(),0)]);sel.innerHTML='<option value="">Usar dinero habitual</option>'+parts.map(x=>`<option value="${esc(x[0])}" ${x[0]===val?'selected':''}>${esc(x[1])}</option>`).join('')}
+function renderGoalOptions(sel,val=''){if(!sel)return;sel.innerHTML='<option value="">Ahorro general</option>'+state.goals.map(g=>`<option value="${g.id}" ${g.id===val?'selected':''}>${esc(g.name)} · ${money(goalBalance(g),0)}</option>`).join('')}
+function renderChequeOptions(sel,val=''){if(!sel)return;const cs=availableCheques();sel.innerHTML='<option value="">Seleccionar cheque…</option>'+cs.map(c=>`<option value="${c.id}" ${c.id===val?'selected':''}>N° ${esc(c.number||'—')} · ${esc(c.issuer||'')} · ${money(c.amount,0)}</option>`).join('')}
+function parseFunding(v){const [kind,id]=String(v||'').split(':');return kind&&id?{kind,id}:null}
+function fundingRemaining(kind,id,excludeId){const old=excludeId?Object.values(state.months).flatMap(m=>m.movements||[]).find(x=>x.id===excludeId):null;const bonus=old&&old.fundingKind===kind&&old.fundingId===id?Number(old.amount||0):0;if(kind==='asignacion')return allocationRemaining(id)+bonus;if(kind==='meta'){const g=state.goals.find(x=>x.id===id);return g?goalBalance(g)+bonus:0}if(kind==='ahorro')return generalSavingsBalance()+bonus;return Infinity}
 function assignmentForExpense(m){
   if(!m.allocationId)return null;
   return Object.values(state.months).flatMap(x=>x.movements||[]).find(x=>x.id===m.allocationId && x.type==='asignacion')||null;
@@ -1173,6 +1185,8 @@ function renderKpis(){
   $('#kpis').innerHTML=cards.map(c=>`<div class="kpi ${c.c}">
     <div class="kpi-label">${icon(c.i,12)} <span>${esc(c.l)}</span></div>
     <div class="kpi-val amt">${esc(c.v)}</div></div>`).join('');
+  const asign=sum(assignmentMovements().map(a=>allocationRemaining(a.id)));const metas=availableGoals().reduce((n,g)=>n+g.balance,0);const ahorro=generalSavingsBalance();
+  $('#fundingSummary').innerHTML=`<div class="card-title">${icon('wallet',14)} Dinero que podés usar</div><div class="funding-strip"><span>${icon('wallet',13)} Asignaciones <b class="amt">${money(asign,0)}</b></span><span>${icon('target',13)} Metas <b class="amt">${money(metas,0)}</b></span><span>${icon('piggy',13)} Ahorro <b class="amt">${money(ahorro,0)}</b></span></div>`;
 }
 function renderCharts(){
   const keys=monthsRange(ui.month,6);const labels=keys.map(ymShort);
@@ -1224,12 +1238,10 @@ function renderQuickAdd(){
   $('#qaFreq').innerHTML=frec.map(f=>`<button type="button" class="chip" data-freq="${esc(f.name)}">${esc(f.name)}</button>`).join('');
   const curM=$('#qaMethod').value;
   $('#qaMethod').innerHTML=state.methods.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
-  const allocSel=$('#qaAllocation');
-  if(allocSel){
-    const show=type==='gasto' && assignmentMovements().length>0;
-    allocSel.style.display=show?'block':'none';
-    renderAllocationOptions(allocSel,ui.qa.allocationId||'');
-  }
+  const fundSel=$('#qaFunding'),goalSel=$('#qaGoal'),chqSel=$('#qaCheque');
+  if(fundSel){fundSel.style.display=type==='gasto'?'block':'none';renderFundingOptions(fundSel,ui.qa.funding||'')}
+  if(goalSel){goalSel.style.display=type==='ahorro'&&state.goals.length?'block':'none';renderGoalOptions(goalSel,ui.qa.goalId||'')}
+  if(chqSel){const show=type==='gasto'&&$('#qaMethod').value==='cheque';chqSel.style.display=show?'block':'none';renderChequeOptions(chqSel,ui.qa.chequeId||'')}
   if(state.methods.some(m=>m.id===curM))$('#qaMethod').value=curM;
   else if(ui.qa.method&&state.methods.some(m=>m.id===ui.qa.method))$('#qaMethod').value=ui.qa.method;
   else if(state.methods.some(m=>m.id==='mp'))$('#qaMethod').value='mp';
@@ -1259,7 +1271,7 @@ function renderMovTable(){
     return `<tr class="${st==='pagado'?'done':''} ${isEd?'editing':''}">
       <td data-l="Estado">${isG?`<button class="state-btn state-${st}" data-act="cycleState" data-id="${m.id}">${icon(stateIconName(st),12)}<span>${stateLabel(st)}</span></button>`:`<span class="state-btn state-pagado">${lbl[m.type]}</span>`}</td>
       <td data-l="Fecha"><div>${esc(m.date||'—')}</div>${m.dueDate?`<div style="font-size:.7rem;color:${st==='vencido'?'var(--bd2)':'var(--dim)'}">Vence ${esc(m.dueDate)}</div>`:''}</td>
-      <td class="concept" data-l="Concepto"><div style="font-weight:600">${esc(m.concept)}</div>${m.allocationId?`<div><span class="allocation-badge">${icon('wallet',10)} ${esc((assignmentForExpense(m)||{}).concept||'Asignación')}</span></div>`:''}${m.note?`<div style="color:var(--dim);font-size:.72rem">${esc(m.note)}</div>`:''}</td>
+      <td class="concept" data-l="Concepto"><div style="font-weight:600">${esc(m.concept)}</div>${m.allocationId?`<div><span class="allocation-badge">${icon('wallet',10)} ${esc((assignmentForExpense(m)||{}).concept||'Asignación')}</span></div>`:''}${m.fundingKind==='meta'?`<div><span class="allocation-badge">${icon('target',10)} ${esc((state.goals.find(g=>g.id===m.fundingId)||{}).name||'Meta')}</span></div>`:''}${m.fundingKind==='ahorro'?`<div><span class="allocation-badge">${icon('piggy',10)} Ahorro general</span></div>`:''}${m.goalId?`<div><span class="allocation-badge">${icon('target',10)} ${esc((state.goals.find(g=>g.id===m.goalId)||{}).name||'Meta')}</span></div>`:''}${m.chequeId?`<div><span class="allocation-badge">${icon('cheque',10)} ${esc(((state.cheques||[]).find(c=>c.id===m.chequeId)||{}).number||'Cheque')}</span></div>`:''}${m.note?`<div style="color:var(--dim);font-size:.72rem">${esc(m.note)}</div>`:''}</td>
       <td data-l="Categoría"><span style="color:var(--dim);font-size:.78rem">${esc(catName(m.cat))}</span></td>
       <td data-l="Medio">${isG?`<select class="mini-select" data-act="setMethod" data-id="${m.id}">${meth}</select>`:`<span style="color:var(--dim);font-size:.78rem">${esc(methodName(m.method))}</span>`}</td>
       <td class="num amt ${m.type==='ingreso'?'pos':m.type==='gasto'?'neg':''}" data-l="Monto">${m.type==='ingreso'?'+':m.type==='ahorro'||m.type==='asignacion'?'→':'−'} ${money(m.amount)}</td>
@@ -1326,16 +1338,15 @@ function goalRingSVG(p,color){
 function renderGoals(){
   const k=kpis(getMonth(ui.month));
   $('#goalsList').innerHTML=state.goals.length?state.goals.map(g=>{
-    const p=g.target>0?Math.min(100,(g.current/g.target)*100):0;
-    const falta=Math.max(0,g.target-g.current);
+    const current=goalBalance(g);const p=g.target>0?Math.min(100,(current/g.target)*100):0;const falta=Math.max(0,g.target-current);
     const meses=k.saving>0?Math.ceil(falta/k.saving):null;
     const eta=meses&&meses<600?ymLabel(shiftMonth(ui.month,meses)):null;
     const color=p>=100?'var(--ok)':p>=50?'var(--pr)':'var(--wn)';
     return `<div class="goal">
       <div class="goal-ring">${goalRingSVG(p,color)}<div class="pct" style="color:${color}">${Math.round(p)}%</div></div>
       <div class="goal-info"><h4>${esc(g.name)}</h4>
-        <div class="nums amt">${money(g.current,0)} / ${money(g.target,0)} · Falta ${money(falta,0)}</div>
-        <div class="eta">${meses?`Con tu ahorro actual (${money(k.saving,0)}/mes) llegás en <b>${meses} mes${meses!==1?'es':''}</b>${eta?` (~${eta})`:''}`:'Cargá un ahorro mensual para estimar'}</div>
+        <div class="nums amt">${money(current,0)} / ${money(g.target,0)} · Falta ${money(falta,0)}</div>
+        <div class="eta">${goalMovements(g.id).length?`${goalMovements(g.id).length} movimiento${goalMovements(g.id).length!==1?'s':''} vinculado${goalMovements(g.id).length!==1?'s':''} · `:''}${meses?`Con tu ahorro actual (${money(k.saving,0)}/mes) llegás en <b>${meses} mes${meses!==1?'es':''}</b>${eta?` (~${eta})`:''}`:'Cargá un ahorro mensual para estimar'}</div>
       </div>
       <div class="goal-actions">
         <button class="icon-btn" data-goal="edit" data-id="${g.id}">${icon('edit',15)}</button>
@@ -1847,13 +1858,19 @@ function renderAsesor(){
   }).join('');
 }
 
+function applyAccessibility(){
+  const labels={cycleState:'Cambiar estado',edit:'Editar movimiento',del:'Eliminar movimiento',chqDel:'Eliminar cheque'};
+  $$('.icon-btn').forEach(b=>{if(!b.getAttribute('aria-label')){const a=b.dataset.act||b.dataset.goal||b.dataset.method||b.dataset.cat||'';b.setAttribute('aria-label',labels[a]||'Acción')}});
+  $$('.tab').forEach(b=>{if(b.dataset.view)b.setAttribute('aria-current',ui.view===b.dataset.view?'page':'false')});
+}
+
 function renderAll(){
   renderKpis();renderCharts();renderQuickAdd();
   renderMovTable();renderCalendar();renderCheques();
   renderBudget();renderGoals();renderSettings();
   renderHelp();renderAsesor();
   renderTabs();renderSheetMore();
-  updateSyncIndicator();
+  updateSyncIndicator();applyAccessibility();
 }
 
 function gcalLink(raw,which){
@@ -1910,7 +1927,7 @@ function resetQA(){
   $('#qaConcept').value='';$('#qaAmount').value='';$('#qaNote').value='';
   $('#qaDue').value=dueDateFor(ui.month);$('#qaDate').value=todayISO();
   $('#qaPaid').checked=false;
-  ui.qa.type='gasto';ui.qa.method='mp';ui.qa.allocationId='';
+  ui.qa.type='gasto';ui.qa.method='mp';ui.qa.funding='';ui.qa.goalId='';ui.qa.chequeId='';
   $$('#qaType button').forEach(b=>b.classList.toggle('active',b.dataset.type==='gasto'));
   const cats=state.cats.filter(c=>c.type==='gasto');
   ui.qa.cat=cats.length?cats[0].id:null;
@@ -1922,7 +1939,7 @@ function resetQA(){
 }
 function loadMovIntoEditor(id){
   const m=ensureMonth(ui.month).movements.find(x=>x.id===id);if(!m)return;
-  ui.editId=id;ui.qa.type=m.type;ui.qa.cat=m.cat;ui.qa.method=m.method;ui.qa.allocationId=m.allocationId||'';
+  ui.editId=id;ui.qa.type=m.type;ui.qa.cat=m.cat;ui.qa.method=m.method;ui.qa.funding=m.fundingKind&&m.fundingId?m.fundingKind+':'+m.fundingId:(m.allocationId?'asignacion:'+m.allocationId:'');ui.qa.goalId=m.goalId||'';ui.qa.chequeId=m.chequeId||'';
   $$('#qaType button').forEach(b=>b.classList.toggle('active',b.dataset.type===m.type));
   $('#qaPaidLabel').style.display=m.type==='gasto'?'':'none';
   $('#qaConcept').value=m.concept;$('#qaAmount').value=nf(m.amount,2);
@@ -1940,12 +1957,10 @@ function submitMovement(){
   if(!concept){toast('Escribí un concepto');$('#qaConcept').focus();return}
   if(amount<=0){toast('Monto mayor a cero');$('#qaAmount').focus();return}
   const m=ensureMonth(ui.month);
-  const allocationId=ui.qa.type==='gasto'?($('#qaAllocation').value||''):null;
-  const oldAllocation=ui.editId?(m.movements.find(x=>x.id===ui.editId)||{}).allocationId:null;
-  if(allocationId && allocationId!==oldAllocation && allocationRemaining(allocationId)<amount){toast('La asignación no tiene saldo suficiente');return}
-  const payload={id:ui.editId||uid(),type:ui.qa.type,concept,cat:ui.qa.cat,amount,
-    method:$('#qaMethod').value,date:$('#qaDate').value||todayISO(),dueDate:$('#qaDue').value||null,
-    allocationId,payState:ui.qa.type==='gasto'?($('#qaPaid').checked?'pagado':'pendiente'):'pagado',note:$('#qaNote').value.trim()};
+  const funding=parseFunding(ui.qa.type==='gasto'?($('#qaFunding').value||''):'');
+  if(funding&&fundingRemaining(funding.kind,funding.id,ui.editId)<amount){toast('No hay saldo suficiente en esa fuente');return}
+  const allocationId=funding&&funding.kind==='asignacion'?funding.id:null;const goalId=ui.qa.type==='ahorro'?($('#qaGoal').value||''):null;
+  const payload={id:ui.editId||uid(),type:ui.qa.type,concept,cat:ui.qa.cat,amount,method:$('#qaMethod').value,date:$('#qaDate').value||todayISO(),dueDate:$('#qaDue').value||null,allocationId,fundingKind:funding?funding.kind:null,fundingId:funding?funding.id:null,goalId,chequeId:ui.qa.type==='gasto'?($('#qaCheque').value||''):null,payState:ui.qa.type==='gasto'?($('#qaPaid').checked?'pagado':'pendiente'):'pagado',note:$('#qaNote').value.trim()};
   if(ui.editId){const i=m.movements.findIndex(x=>x.id===ui.editId);if(i>=0)m.movements[i]=payload;toast('Actualizado')}
   else{m.movements.push(payload);toast('Agregado')}
   persist();resetQA();renderAll();
@@ -1969,12 +1984,9 @@ function renderSheetQA(){
   const cats=state.cats.filter(c=>c.type===ui.qa.type);
   if(!ui.qa.cat||!cats.some(c=>c.id===ui.qa.cat))ui.qa.cat=cats.length?cats[0].id:null;
   $('#sheetChips').innerHTML=cats.map(c=>`<button type="button" data-sheet-cat="${c.id}" class="${c.id===ui.qa.cat?'active':''}"><i class="cdot" style="background:var(--c${c.color||1})"></i>${esc(c.name)}</button>`).join('');
-  const allocField=$('#sheetAllocationField'),allocSel=$('#sheetAllocation');
-  if(allocField&&allocSel){
-    const show=ui.qa.type==='gasto' && assignmentMovements().length>0;
-    allocField.hidden=!show;
-    renderAllocationOptions(allocSel,ui.qa.allocationId||'');
-  }
+  const fundField=$('#sheetFundingField'),fundSel=$('#sheetFunding');if(fundField&&fundSel){fundField.hidden=ui.qa.type!=='gasto';renderFundingOptions(fundSel,ui.qa.funding||'')}
+  const goalField=$('#sheetGoalField'),goalSel=$('#sheetGoal');if(goalField&&goalSel){goalField.hidden=ui.qa.type!=='ahorro'||!state.goals.length;renderGoalOptions(goalSel,ui.qa.goalId||'')}
+  const chequeField=$('#sheetChequeField'),chequeSel=$('#sheetCheque');if(chequeField&&chequeSel){const show=ui.qa.type==='gasto'&&$('#sheetMethod').value==='cheque';chequeField.hidden=!show;renderChequeOptions(chequeSel,ui.qa.chequeId||'')}
   const frec=frequentConcepts(10);
   $('#sheetFrec').innerHTML=frec.map(f=>`<button type="button" data-sheet-frec="${esc(f.name)}">${esc(f.name)}</button>`).join('')||'<span style="font-size:.75rem;color:var(--dim)">Los conceptos que más usás aparecen acá para autocompletar</span>';
   $('#sheetConceptList').innerHTML=allConcepts().map(c=>`<option value="${esc(c)}"></option>`).join('');
@@ -1990,17 +2002,9 @@ function submitFromSheet(){
   if(!concept){toast('Escribí un concepto');$('#sheetConcept').focus();return}
   if(amount<=0){toast('Monto mayor a cero');$('#sheetAmount').focus();return}
   const m=ensureMonth(ui.month);
-  const allocationId=ui.qa.type==='gasto'?($('#sheetAllocation').value||''):null;
-  if(allocationId && allocationRemaining(allocationId)<amount){toast('La asignación no tiene saldo suficiente');return}
-  m.movements.push({
-    id:uid(),type:ui.qa.type,concept,cat:ui.qa.cat,amount,
-    method:$('#sheetMethod').value||'mp',
-    date:$('#sheetDate').value||todayISO(),
-    dueDate:$('#sheetDue').value||null,
-    allocationId,
-    payState:ui.qa.type==='gasto'?'pendiente':'pagado',
-    note:$('#sheetNote').value.trim()
-  });
+  const funding=parseFunding(ui.qa.type==='gasto'?($('#sheetFunding').value||''):null);if(funding&&fundingRemaining(funding.kind,funding.id,null)<amount){toast('No hay saldo suficiente en esa fuente');return}
+  const allocationId=funding&&funding.kind==='asignacion'?funding.id:null;
+  m.movements.push({id:uid(),type:ui.qa.type,concept,cat:ui.qa.cat,amount,method:$('#sheetMethod').value||'mp',date:$('#sheetDate').value||todayISO(),dueDate:$('#sheetDue').value||null,allocationId,fundingKind:funding?funding.kind:null,fundingId:funding?funding.id:null,goalId:ui.qa.type==='ahorro'?($('#sheetGoal').value||''):null,chequeId:ui.qa.type==='gasto'?($('#sheetCheque').value||''):null,payState:ui.qa.type==='gasto'?'pendiente':'pagado',note:$('#sheetNote').value.trim()});
   persist();
   closeSheets();
   renderAll();
@@ -2089,8 +2093,12 @@ function bindEvents(){
       }
       return;
     }
-    if(t.id==='qaAllocation'){ui.qa.allocationId=t.value;return}
-    if(t.id==='sheetAllocation'){ui.qa.allocationId=t.value;return}
+    if(t.id==='qaFunding'){ui.qa.funding=t.value;return}
+    if(t.id==='sheetFunding'){ui.qa.funding=t.value;return}
+    if(t.id==='qaGoal'){ui.qa.goalId=t.value;return}
+    if(t.id==='sheetGoal'){ui.qa.goalId=t.value;return}
+    if(t.id==='qaCheque'){ui.qa.chequeId=t.value;const c=(state.cheques||[]).find(x=>x.id===t.value);if(c&&!$('#qaAmount').value)$('#qaAmount').value=nf(c.amount,2);return}
+    if(t.id==='sheetCheque'){ui.qa.chequeId=t.value;const c=(state.cheques||[]).find(x=>x.id===t.value);if(c&&!$('#sheetAmount').value)$('#sheetAmount').value=nf(c.amount,2);return}
 
     const mvSheet=t.closest('#sheetMoreGrid button[data-view]');
     if(mvSheet){switchView(mvSheet.dataset.view);closeSheets();return}
@@ -2162,6 +2170,7 @@ function bindEvents(){
   document.addEventListener('change',e=>{
     const t=e.target;
     if(t.dataset&&t.dataset.act==='setMethod'){const mv=ensureMonth(ui.month).movements.find(x=>x.id===t.dataset.id);if(mv){mv.method=t.value;persist();renderKpis()}}
+    if(t.id==='qaMethod'||t.id==='sheetMethod'){renderQuickAdd();renderSheetQA()}
     if(t.dataset&&t.dataset.act==='chqStatus'){const c=state.cheques.find(x=>x.id===t.dataset.id);if(c){c.status=t.value;persist();renderCheques()}}
     if(t.dataset&&['type','group'].includes(t.dataset.cat)){const c=state.cats.find(x=>x.id===t.dataset.id);if(c){c[t.dataset.cat]=t.value;persist();renderAll()}}
     if(t.id==='newCatType'){ui.newCat.type=t.value}
@@ -2217,7 +2226,7 @@ function bindEvents(){
   $('#gAdd').addEventListener('click',()=>{
     const name=titleCase($('#gName').value||'');const target=parseMoney($('#gTarget').value);const current=parseMoney($('#gCurrent').value);
     if(!name||target<=0){toast('Completá nombre y objetivo');return}
-    state.goals.push({id:uid(),name,target,current});persist();
+    state.goals.push({id:uid(),name,target,current,baseCurrent:current});persist();
     $('#gName').value='';$('#gTarget').value='';$('#gCurrent').value='';renderGoals();toast('Creada');
   });
 
@@ -2291,7 +2300,7 @@ function editGoal(id){
   row.querySelector('[data-edit-save]').addEventListener('click',()=>{
     g.name=titleCase($('#egName').value||g.name);
     g.target=parseMoney($('#egTarget').value);
-    g.current=parseMoney($('#egCurrent').value);
+    g.current=parseMoney($('#egCurrent').value);g.baseCurrent=g.current;
     persist();renderGoals();toast('Actualizada');
   });
 }
@@ -2397,7 +2406,7 @@ function buildReportHTML(){
     </div>`:''}
     <div class="rep-section"><h2>06 · METAS Y PROYECCIONES</h2>
       ${state.goals.length?`<table><thead><tr><th>META</th><th class="num">OBJETIVO</th><th class="num">ACUM.</th><th class="num">%</th><th class="num">FALTA</th></tr></thead>
-        <tbody>${state.goals.map(g=>`<tr><td>${esc(g.name)}</td><td class="num">${money(g.target,0)}</td><td class="num">${money(g.current,0)}</td><td class="num">${g.target?pct(g.current/g.target*100,1):'—'}</td><td class="num">${money(Math.max(0,g.target-g.current),0)}</td></tr>`).join('')}</tbody></table>`:'<p class="rep-note">Sin metas.</p>'}
+        <tbody>${state.goals.map(g=>`<tr><td>${esc(g.name)}</td><td class="num">${money(g.target,0)}</td><td class="num">${money(goalBalance(g),0)}</td><td class="num">${g.target?pct(goalBalance(g)/g.target*100,1):'—'}</td><td class="num">${money(Math.max(0,g.target-goalBalance(g)),0)}</td></tr>`).join('')}</tbody></table>`:'<p class="rep-note">Sin metas.</p>'}
       <p class="rep-note" style="margin-top:5pt">FONDO EMERGENCIA: <b>${money(k.expense*6,0)}</b> · NÚMERO LIBERTAD: <b>${money(k.expense*12/0.04,0)}</b>.</p>
     </div>
     <div class="rep-section"><h2>07 · SUGERENCIAS</h2>
@@ -2476,7 +2485,7 @@ async function init(){
     state.methods=Array.isArray(saved.methods)&&saved.methods.length?saved.methods:DEFAULT_METHODS.map(m=>({...m}));
     state.cats=Array.isArray(saved.cats)&&saved.cats.length?saved.cats:DEFAULT_CATS.map(c=>({...c}));
     if(!state.cats.some(c=>c.type==='asignacion')){DEFAULT_CATS.filter(c=>c.type==='asignacion').forEach(c=>state.cats.push({...c}))}
-    state.goals=Array.isArray(saved.goals)?saved.goals:[];
+    state.goals=Array.isArray(saved.goals)?saved.goals:[];state.goals.forEach(g=>{if(g.baseCurrent===undefined)g.baseCurrent=Number(g.current||0)});
     state.cheques=Array.isArray(saved.cheques)?saved.cheques:[];
     state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
     state.months=saved.months&&typeof saved.months==='object'?saved.months:{};
