@@ -192,6 +192,66 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=month]::-webkit-c
 .segmented button.active{background:var(--sf);color:var(--tx);font-weight:600}
 .qa-input{flex:1 1 180px;min-width:0}
 .qa-amount{flex:0 0 130px;font-family:var(--mono);text-align:right}
+.sum-btn{flex:0 0 auto;width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:var(--s2);color:var(--pr);font-size:1.4rem;font-weight:700;line-height:1;display:grid;place-items:center}
+.sum-btn:hover{border-color:var(--pr)}
+.qa-amount-row .sum-btn{width:44px;height:44px}
+.sum-prev{font-size:.82rem;font-family:var(--mono);color:var(--dim);padding:4px 2px}
+.sum-prev b{color:var(--ok);font-size:1rem}
+.sum-prev[hidden]{display:none}
+/* Plan de traspaso */
+.plan-hero{text-align:center;padding:16px 12px}
+.plan-hero .lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim)}
+.plan-big{font-family:var(--mono);font-size:2.3rem;font-weight:800;color:var(--pr);letter-spacing:-.02em;margin:2px 0}
+.plan-sub{font-size:.82rem;color:var(--dim)}
+.plan-prog{height:8px;border-radius:99px;background:var(--s2);margin:12px 0 4px;overflow:hidden}
+.plan-prog i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .3s}
+.plan-kv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;text-align:left}
+.plan-kv>div{background:var(--s2);border-radius:var(--rs);padding:8px 10px;font-size:.74rem;color:var(--dim)}
+.plan-kv b{display:block;font-family:var(--mono);font-size:1rem;color:var(--tx);margin-top:2px}
+.plan-kv b.ok{color:var(--ok)}.plan-kv b.bad{color:#ef4444}
+.plan-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:12px}
+.plan-tools label{font-size:.78rem;color:var(--dim);display:flex;align-items:center;gap:6px}
+.plan-tools input[type=text],.plan-tools input:not([type]){width:130px;text-align:right;font-family:var(--mono)}
+.plan-g{border:1px solid var(--bd);border-radius:var(--rs);background:var(--s2);margin-bottom:6px;overflow:hidden}
+.plan-g>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:11px 12px}
+.plan-g>summary::-webkit-details-marker{display:none}
+.plan-g .chk{width:24px;height:24px;flex:0 0 auto;accent-color:var(--ok);cursor:pointer}
+.plan-g .nm{flex:1;min-width:0}.plan-g .nm b{display:block;font-size:.95rem}
+.plan-g .nm small{color:var(--dim);font-size:.72rem}
+.plan-g .pa{font-family:var(--mono);font-weight:700;font-size:1rem}
+.plan-g.done{opacity:.55}.plan-g.done .nm b{text-decoration:line-through}
+.plan-items{padding:2px 12px 10px 46px;font-size:.8rem}
+.plan-items div{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px dashed var(--bd)}
+.plan-items .late{color:#ef4444}
+.plan-tbl{overflow-x:auto}.plan-tbl table{min-width:420px}.plan-tbl td,.plan-tbl th{text-align:right;padding:6px 8px;white-space:nowrap}
+.plan-tbl td:first-child,.plan-tbl th:first-child{text-align:left}
+.plan-tbl tr.hub td{background:color-mix(in srgb,var(--pr) 12%,transparent);font-weight:700}
+.plan-mini{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-mini .t{flex:1 1 180px}.plan-mini .t b{display:block;font-family:var(--mono);font-size:1.4rem;color:var(--pr)}
+.plan-mini .t small{color:var(--dim)}
+.res-map{display:flex;align-items:center;gap:8px;padding:5px 6px;border-bottom:1px solid var(--bd)}
+.res-map span{flex:1;font-size:.85rem}.res-map select{flex:0 0 52%;font-size:.8rem}
+/* Ajustes por pestañas */
+#view-settings>.card{display:none}
+#view-settings>.card.set-on{display:block}
+.set-nav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.set-nav::-webkit-scrollbar{display:none}
+.set-nav button{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;border:1px solid var(--bd);background:var(--s2);color:var(--dim);font-size:.82rem;font-weight:600;white-space:nowrap}
+.set-nav button.active{background:var(--pr);color:var(--pi);border-color:var(--pr)}
+.set-filter{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.set-filter button{padding:6px 12px;border-radius:999px;border:1px solid var(--bd);background:var(--s2);color:var(--dim);font-size:.78rem;font-weight:600}
+.set-filter button.active{border-color:var(--pr);color:var(--tx);background:var(--sf)}
+.cyc{flex:0 0 auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);background:var(--sf);display:grid;place-items:center;color:var(--tx)}
+.cyc i{display:block;width:16px;height:16px;border-radius:50%}
+details.theme-group{border:1px solid var(--bd);border-radius:var(--rs);background:var(--s2);padding:0}
+details.theme-group>summary{cursor:pointer;list-style:none;padding:10px 12px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);display:flex;justify-content:space-between}
+details.theme-group>summary::-webkit-details-marker{display:none}
+details.theme-group>summary::after{content:"▾"}
+details.theme-group[open]>summary::after{content:"▴"}
+details.theme-group .theme-grid{padding:0 10 10px;padding:0 10px 10px}
+.set-row{flex-wrap:wrap}
+.set-row .grow{flex:1 1 130px}
+@media(max-width:720px){.set-row select{flex:1 1 90px!important}}
 .qa-date{flex:0 0 140px}
 
 .chips{display:flex;gap:5px;overflow-x:auto;padding:2px 0;scrollbar-width:none;flex:1 1 100%}
@@ -535,7 +595,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="qa-amount-row">
         <span class="cur">$</span>
         <input id="sheetAmount" inputmode="decimal" placeholder="0" autocomplete="off">
+        <button type="button" class="sum-btn" data-sum-for="sheetAmount" aria-label="Sumar otro monto" title="Sumar otro monto">+</button>
       </div>
+      <div class="sum-prev" id="sheetSumPrev" hidden></div>
     </div>
 
     <div class="qa-field">
@@ -581,7 +643,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
   <main>
     <section class="view active" id="view-panel" role="tabpanel">
-      <div class="kpis" id="kpis"></div><div class="card" id="fundingSummary" style="margin-bottom:8px"></div>
+      <div class="kpis" id="kpis"></div><div class="card" id="planCard"></div><div class="card" id="fundingSummary" style="margin-bottom:8px"></div>
       <div class="grid g2">
         <div class="card"><div class="card-title" id="hBars"></div><div class="chart-box" id="chartBars"></div></div>
         <div class="card"><div class="card-title" id="hDonut"></div><div class="chart-box" id="chartDonut"></div><div class="legend" id="legendDonut"></div></div>
@@ -605,6 +667,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
           </div>
           <input class="qa-input" id="qaConcept" placeholder="Concepto…" autocomplete="off">
           <input class="qa-amount" id="qaAmount" inputmode="decimal" placeholder="0,00">
+          <button type="button" class="sum-btn" data-sum-for="qaAmount" aria-label="Sumar otro monto" title="Sumar otro monto">+</button>
+          <span class="sum-prev" id="qaSumPrev" hidden></span>
           <button class="btn btn-primary btn-sm" id="qaAdd"></button>
           <button class="btn btn-ghost btn-sm" id="qaCancel" hidden></button>
         </div>
@@ -712,6 +776,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="card"><div class="card-title" id="hCompare"></div><div id="compareList"></div></div>
     </section>
 
+    <section class="view" id="view-plan" role="tabpanel">
+      <div id="planBody"></div>
+    </section>
+
     <section class="view" id="view-goals" role="tabpanel">
       <div class="card">
         <div class="card-title" id="hGoals"></div>
@@ -751,6 +819,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     </section>
 
     <section class="view" id="view-settings" role="tabpanel">
+      <div class="set-nav" id="setNav"></div>
       <div class="card">
         <div class="card-title" id="hBar"></div>
         <p class="kpi-sub" style="margin-top:-4px;margin-bottom:10px">Elegí qué accesos aparecen en la barra inferior y en qué orden. La barra es la misma en PC y en móvil.</p>
@@ -766,7 +835,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="card"><div class="card-title" id="hMethods"></div><div class="set-table" id="methodsList"></div>
         <div class="qa-row" style="margin-top:8px"><input id="newMethodName" placeholder="Nuevo medio de pago…" style="flex:1 1 200px"><div class="icon-pick" id="newMethodIcon"></div><button class="btn btn-primary btn-sm" id="btnAddMethod"></button></div>
       </div>
-      <div class="card"><div class="card-title" id="hCats"></div><div class="set-table" id="catsList"></div>
+      <div class="card"><div class="card-title" id="hCats"></div><div class="set-filter" id="catFilter"></div><div class="set-table" id="catsList"></div>
         <div class="qa-row" style="margin-top:8px">
           <input id="newCatName" placeholder="Nueva categoría…" style="flex:1 1 180px">
           <select id="newCatType" style="flex:0 0 120px"><option value="gasto">Gasto</option><option value="ingreso">Ingreso</option><option value="ahorro">Ahorro</option><option value="asignacion">Asignación</option></select>
@@ -774,6 +843,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
           <div class="color-dots" id="newCatColor"></div>
           <button class="btn btn-primary btn-sm" id="btnAddCat"></button>
         </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Reservas</div>
+        <p class="kpi-sub" style="margin:-4px 0 10px">Una reserva agrupa categorías (ej. “Casa” = Vivienda + Servicios). Si no asignás ninguna, cada categoría es su propia reserva.</p>
+        <div class="qa-row" style="margin-bottom:10px"><input id="newResName" placeholder="Nueva reserva (ej. Casa)…" style="flex:1 1 180px"><button class="btn btn-primary btn-sm" id="btnAddRes" type="button">Agregar</button></div>
+        <div class="set-table" id="resList"></div>
+        <h3 style="font-size:.8rem;margin:14px 0 6px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em">Categoría → Reserva</h3>
+        <div id="resMap"></div>
       </div>
       <div class="card">
         <div class="card-title" id="hData"></div>
@@ -824,23 +901,41 @@ function titleCase(s){
   const minor=new Set(['de','del','la','las','los','y','o','a','en','con','por','para','el','al','un','una','e','u']);
   return String(s).trim().toLowerCase().split(/\s+/).map((w,i)=>{if(!w)return w;if(i>0&&minor.has(w))return w;return w.charAt(0).toUpperCase()+w.slice(1)}).join(' ');
 }
-function fmtInput(v){
-  v=String(v).replace(/[^\d,]/g,'');const i=v.indexOf(',');let int,dec='';
+function fmtTerm(v){
+  const i=v.indexOf(',');let int,dec='';
   if(i>=0){int=v.slice(0,i);dec=','+v.slice(i+1).replace(/,/g,'').slice(0,2)}else int=v;
   int=int.replace(/^0+(?=\d)/,'');if(int===''&&dec)int='0';
   int=int.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   return int+dec;
 }
-function parseMoney(s){if(typeof s==='number')return s;if(!s)return 0;const n=parseFloat(String(s).replace(/\./g,'').replace(',','.'));return isFinite(n)?n:0}
+function fmtInput(v){
+  v=String(v).replace(/[^\d,+]/g,'');
+  const parts=v.split('+').map(fmtTerm).filter((p,i,a)=>p!==''||i===a.length-1);
+  return parts.join(' + ');
+}
+function parseTerm(s){const n=parseFloat(String(s).replace(/\./g,'').replace(',','.'));return isFinite(n)?n:0}
+function parseMoney(s){if(typeof s==='number')return s;if(!s)return 0;const str=String(s);if(str.indexOf('+')>=0)return str.split('+').reduce((a,p)=>a+parseTerm(p),0);return parseTerm(str)}
+function sumParts(s){return String(s||'').split('+').map(parseTerm).filter(n=>n>0)}
 function onMoneyInput(e){
   const el=e.target,raw=el.value,caret=el.selectionStart;
-  const dBefore=raw.slice(0,caret).replace(/[^\d,]/g,'').length;
+  const dBefore=raw.slice(0,caret).replace(/[^\d,+]/g,'').length;
   const out=fmtInput(raw);el.value=out;
   let count=0,idx=out.length;
-  for(let i=0;i<out.length;i++){if(/[\d,]/.test(out[i]))count++;if(count===dBefore){idx=i+1;break}}
+  for(let i=0;i<out.length;i++){if(/[\d,+]/.test(out[i]))count++;if(count===dBefore){idx=i+1;break}}
   try{el.setSelectionRange(idx,idx)}catch(_){}
+  refreshSumPrev();
 }
 const attachMoney=el=>el&&el.addEventListener('input',onMoneyInput);
+function refreshSumPrev(){
+  [['qaAmount','qaSumPrev'],['sheetAmount','sheetSumPrev']].forEach(([i,p])=>{
+    const inp=document.getElementById(i),pv=document.getElementById(p);if(!inp||!pv)return;
+    const parts=sumParts(inp.value);
+    if(String(inp.value).indexOf('+')<0||!parts.length){if(!pv.hidden){pv.hidden=true;pv.textContent=''}return}
+    const html=parts.length+' montos = <b>'+money(parts.reduce((a,b)=>a+b,0),2)+'</b>';
+    if(pv.dataset.h!==html){pv.dataset.h=html;pv.innerHTML=html}
+    pv.hidden=false;
+  });
+}
 let toastT;
 function toast(msg){
   const t=$('#toast');if(!t)return;
@@ -961,7 +1056,7 @@ const defaultState=()=>({
   settings:{theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},
   methods:DEFAULT_METHODS.map(m=>({...m})),
   cats:DEFAULT_CATS.map(c=>({...c})),
-  months:{},goals:[],cheques:[],
+  months:{},goals:[],cheques:[],reservas:[],
   sync:{gist:{token:'',id:'',autoPush:false,lastSync:null},lastSave:null},
   created:new Date().toISOString()
 });
@@ -1111,6 +1206,7 @@ function cleanMonths(months){
   if(months&&typeof months==='object'){Object.keys(months).forEach(k=>{
     const m=months[k];if(!m||typeof m!=='object')return;
     out[k]={movements:Array.isArray(m.movements)?m.movements.filter(x=>x&&typeof x==='object'):[],budgets:(m.budgets&&typeof m.budgets==='object')?m.budgets:{}};
+    if(m.plan&&typeof m.plan==='object')out[k].plan=m.plan;
   })}
   return out;
 }
@@ -1522,6 +1618,7 @@ const ALL_VIEWS=[
   {v:'mov',i:'list',l:'Movimientos'},
   {v:'cal',i:'calendar',l:'Calendario'},
   {v:'chq',i:'cheque',l:'Cheques'},
+  {v:'plan',i:'bank',l:'Traspaso'},
   {v:'budget',i:'wallet',l:'Presupuesto'},
   {v:'goals',i:'target',l:'Metas'},
   {v:'adv',i:'sparkles',l:'Asesor'},
@@ -1574,23 +1671,26 @@ function renderBarEditor(){
 
 function renderSettings(){
   renderBarEditor();
-  $('#themeGroups').innerHTML=THEME_GROUPS.map(g=>`<div class="theme-group"><h4>${esc(g.name)}</h4>
+  $('#themeGroups').innerHTML=THEME_GROUPS.map(g=>`<details class="theme-group" ${g.themes.some(t=>t.id===state.settings.theme)?'open':''}><summary>${esc(g.name)} <span>${g.themes.length}</span></summary>
     <div class="theme-grid">${g.themes.map(t=>`<button class="theme-card ${state.settings.theme===t.id?'active':''}" data-theme="${t.id}" type="button">
       <div class="swatches">${t.sw.map(c=>`<i style="background:${c}"></i>`).join('')}</div><b>${esc(t.name)}</b>
-    </button>`).join('')}</div></div>`).join('');
+    </button>`).join('')}</div></details>`).join('');
   $('#methodsList').innerHTML=state.methods.map(m=>`
     <div class="set-row" data-method-id="${m.id}">
-      <div class="icon-pick">${METHOD_ICONS.map(ic=>`<button type="button" data-method-icon-pick="${ic}" class="${m.icon===ic?'active':''}">${icon(ic,14)}</button>`).join('')}</div>
+      <button type="button" class="cyc" data-method-icon-next="1" title="Tocá para cambiar el ícono">${icon(m.icon||'wallet',16)}</button>
       <input class="grow" data-method="name" data-id="${m.id}" value="${esc(m.name)}">
       <button class="icon-btn" data-method="del" data-id="${m.id}">${icon('trash',14)}</button>
     </div>`).join('')||`<div class="empty" style="padding:10px">Sin medios de pago</div>`;
   $('#newMethodIcon').innerHTML=METHOD_ICONS.map(ic=>`<button type="button" data-newmethod-icon="${ic}" class="${ui.newMethod.icon===ic?'active':''}">${icon(ic,14)}</button>`).join('');
   $('#newMethodName').value=ui.newMethod.name||'';
   const order={gasto:0,ingreso:1,ahorro:2,asignacion:3};
-  const sorted=state.cats.slice().sort((a,b)=>order[a.type]-order[b.type]||a.name.localeCompare(b.name,'es'));
+  if(!ui.catFilter)ui.catFilter='gasto';
+  const sorted=state.cats.filter(c=>c.type===ui.catFilter).sort((a,b)=>order[a.type]-order[b.type]||a.name.localeCompare(b.name,'es'));
+  const _cnt=t=>state.cats.filter(c=>c.type===t).length;
+  $('#catFilter').innerHTML=[['gasto','Gastos'],['ingreso','Ingresos'],['ahorro','Ahorro'],['asignacion','Asignaciones']].map(([t,l])=>`<button type="button" data-cat-filter="${t}" class="${ui.catFilter===t?'active':''}">${l} (${_cnt(t)})</button>`).join('');
   $('#catsList').innerHTML=sorted.map(c=>`
     <div class="set-row" data-cat-id="${c.id}">
-      <div class="color-dots">${[1,2,3,4,5,6,7,8].map(n=>`<button type="button" data-cat-color="${n}" class="${c.color===n?'active':''}" style="background:var(--c${n})"></button>`).join('')}</div>
+      <button type="button" class="cyc" data-cat-color-next="1" title="Tocá para cambiar el color"><i style="background:var(--c${c.color||1})"></i></button>
       <input class="grow" data-cat="name" data-id="${c.id}" value="${esc(c.name)}">
       <select style="flex:0 0 110px;font-size:.76rem;padding:4px 6px" data-cat="type" data-id="${c.id}">
         <option value="gasto" ${c.type==='gasto'?'selected':''}>Gasto</option><option value="ingreso" ${c.type==='ingreso'?'selected':''}>Ingreso</option>
@@ -1607,6 +1707,145 @@ function renderSettings(){
   $('#newCatGroup').value=ui.newCat.group;
   $('#storageInfo').innerHTML=`Almacenamiento: <b>${_useIDB?'IndexedDB':'localStorage'}</b> · Movs: <b>${Object.values(state.months).reduce((s,m)=>s+(m.movements||[]).length,0)}</b> · Meses: <b>${Object.keys(state.months).length}</b> · Cheques: <b>${state.cheques.length}</b>`;
   renderSyncSection();
+  try{renderReservas()}catch(e){console.error(e)}
+  applySetTab();
+}
+const SET_TABS=[['barra','Barra','dots'],['tema','Temas','palette'],['medios','Medios de pago','card'],['cats','Categorías','list'],['reservas','Reservas','wallet'],['sync','Sincronizar','cloud'],['datos','Datos','download']];
+function applySetTab(){
+  if(!ui.setTab)ui.setTab='tema';
+  const order=['barra','sync','tema','medios','cats','reservas','datos'];
+  $$('#view-settings>.card').forEach((c,i)=>c.classList.toggle('set-on',order[i]===ui.setTab));
+  const nav=$('#setNav');if(nav)nav.innerHTML=SET_TABS.map(([k,l,ic])=>`<button type="button" data-set-tab="${k}" class="${ui.setTab===k?'active':''}">${icon(ic,14)}${l}</button>`).join('');
+}
+
+/* ===== PLAN DE TRASPASO ===== */
+function reserveOf(catId){
+  const c=catById(catId);
+  if(c&&c.reserve){const r=(state.reservas||[]).find(x=>x.id===c.reserve);if(r)return{key:r.id,name:r.name}}
+  return{key:'c:'+catId,name:catName(catId)};
+}
+function hubId(){const h=state.settings.hub;if(h&&methodById(h))return h;return methodById('mp')?'mp':((state.methods[0]||{}).id||'')}
+const fmtDM=d=>d?d.slice(8,10)+'/'+d.slice(5,7):'';
+function planData(key){
+  const m=getMonth(key),mvs=m.movements||[],hub=hubId();
+  const plan=m.plan||{},have=Number(plan.have||0)||0,done=plan.done||{};
+  const isOut=x=>x.type!=='ingreso',paid=x=>movState(x)==='pagado';
+  const rows=state.methods.map(me=>{const l=mvs.filter(x=>x.method===me.id);
+    return{id:me.id,name:me.name,inCob:sum(l.filter(x=>x.type==='ingreso'&&paid(x))),inPend:sum(l.filter(x=>x.type==='ingreso'&&!paid(x))),
+      outPag:sum(l.filter(x=>isOut(x)&&paid(x))),outPend:sum(l.filter(x=>isOut(x)&&!paid(x)))}});
+  const items=mvs.filter(x=>isOut(x)&&x.method===hub&&!paid(x));
+  const map=new Map();
+  items.forEach(x=>{const r=reserveOf(x.cat);if(!map.has(r.key))map.set(r.key,{key:r.key,name:r.name,total:0,items:[],due:null});
+    const g=map.get(r.key);g.total+=Number(x.amount)||0;g.items.push(x);if(x.dueDate&&(!g.due||x.dueDate<g.due))g.due=x.dueDate});
+  const groups=Array.from(map.values()).sort((a,b)=>(a.due||'9')<(b.due||'9')?-1:(a.due||'9')>(b.due||'9')?1:b.total-a.total);
+  groups.forEach(g=>{g.done=!!done[g.key];g.items.sort((a,b)=>(a.dueDate||'9').localeCompare(b.dueDate||'9'))});
+  const other=mvs.filter(x=>x.method!==hub);
+  const inCob=sum(other.filter(x=>x.type==='ingreso'&&paid(x))),inPend=sum(other.filter(x=>x.type==='ingreso'&&!paid(x)));
+  const outPagO=sum(other.filter(x=>isOut(x)&&paid(x))),outPendO=sum(other.filter(x=>isOut(x)&&!paid(x)));
+  const hubOutPag=sum(mvs.filter(x=>isOut(x)&&x.method===hub&&paid(x))),hubInCob=sum(mvs.filter(x=>x.type==='ingreso'&&x.method===hub&&paid(x)));
+  const passed=Math.max(0,hubOutPag-hubInCob);
+  const avail=inCob-outPagO-passed-outPendO;
+  const total=sum(items),toPass=Math.max(0,total-have),doneAmt=sum(groups.filter(g=>g.done),g=>g.total);
+  return{hub,rows,groups,items,total,have,toPass,doneAmt,left:Math.max(0,toPass-doneAmt),avail,diff:avail-toPass,inCob,inPend,outPagO,outPendO,passed,hubName:methodName(hub)};
+}
+function planText(key){
+  const d=planData(key);
+  const L=['Pasar a '+d.hubName+' – '+ymLabel(key),'TOTAL: '+money(d.toPass,0)+(d.have?' (ya tengo '+money(d.have,0)+')':''),''];
+  d.groups.forEach(g=>L.push((g.done?'✅ ':'• ')+g.name+': '+money(g.total,0)+(g.due?' (vence '+fmtDM(g.due)+')':'')));
+  return L.join('\n');
+}
+function renderPlan(){
+  const body=document.getElementById('planBody');
+  const key=ui.month,d=planData(key);
+  if(!ui.planOpen)ui.planOpen={};
+  const pctDone=d.toPass>0?Math.min(100,Math.round(d.doneAmt/d.toPass*100)):(d.total>0?100:0);
+  const diffTxt=d.diff>=0?'Sobra':'Falta';
+  if(body){
+    body.innerHTML=`
+    <div class="card plan-hero">
+      <div class="lbl">Pasar a <select id="planHub" style="width:auto;display:inline-block;font-weight:700">${state.methods.map(m=>`<option value="${m.id}" ${m.id===d.hub?'selected':''}>${esc(m.name)}</option>`).join('')}</select> · ${esc(ymLabel(key))}</div>
+      <div class="plan-big amt">${money(d.toPass,0)}</div>
+      <div class="plan-sub">${d.items.length} pago${d.items.length!==1?'s':''} pendiente${d.items.length!==1?'s':''} en ${esc(d.hubName)}${d.have?` · ya tenés ${money(d.have,0)}`:''}</div>
+      <div class="plan-prog"><i style="width:${pctDone}%"></i></div>
+      <div class="plan-sub">Pasaste <b class="amt">${money(d.doneAmt,0)}</b> · Falta pasar <b class="amt">${money(d.left,0)}</b></div>
+      <div class="plan-kv">
+        <div>Disponible en otros medios<b class="amt">${money(d.avail,0)}</b></div>
+        <div>${diffTxt}<b class="amt ${d.diff>=0?'ok':'bad'}">${money(Math.abs(d.diff),0)}</b></div>
+      </div>
+      ${d.inPend>0?`<div class="plan-sub" style="margin-top:8px">Por cobrar todavía: <b class="amt">${money(d.inPend,0)}</b> (no incluido)</div>`:''}
+      <div class="plan-tools">
+        <label>Ya tengo en ${esc(d.hubName)} <input id="planHave" inputmode="decimal" placeholder="0" value="${d.have?fmtInput(String(d.have).replace('.',',')):''}"></label>
+        <button class="btn btn-primary btn-sm" type="button" id="planCopy">Copiar resumen</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">A qué reserva va cada parte</div>
+      ${d.groups.length?d.groups.map(g=>`
+      <details class="plan-g ${g.done?'done':''}" data-gkey="${esc(g.key)}" ${ui.planOpen[g.key]?'open':''}>
+        <summary><input type="checkbox" class="chk" data-plan-done="${esc(g.key)}" ${g.done?'checked':''} title="Marcar como ya pasado">
+          <div class="nm"><b>${esc(g.name)}</b><small>${g.items.length} pago${g.items.length!==1?'s':''}${g.due?' · vence '+fmtDM(g.due):''}</small></div>
+          <div class="pa amt">${money(g.total,0)}</div></summary>
+        <div class="plan-items">${g.items.map(x=>`<div class="${movState(x)==='vencido'?'late':''}"><span>${esc(x.concept)}${x.dueDate?' · '+fmtDM(x.dueDate):''}</span><span class="amt">${money(x.amount,0)}</span></div>`).join('')}</div>
+      </details>`).join(''):'<div class="empty">No hay pagos pendientes en este medio 🎉</div>'}
+    </div>
+    <div class="card">
+      <div class="card-title">Plata por medio de pago</div>
+      <div class="plan-tbl"><table><thead><tr><th>Medio</th><th>Cobrado</th><th>Por cobrar</th><th>Pagado</th><th>Por pagar</th></tr></thead><tbody>
+      ${d.rows.filter(r=>r.inCob||r.inPend||r.outPag||r.outPend).map(r=>`<tr class="${r.id===d.hub?'hub':''}"><td>${esc(r.name)}</td><td class="amt">${money(r.inCob,0)}</td><td class="amt">${money(r.inPend,0)}</td><td class="amt">${money(r.outPag,0)}</td><td class="amt">${money(r.outPend,0)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Sin movimientos</td></tr>'}
+      </tbody></table></div>
+    </div>
+    <details class="card"><summary style="cursor:pointer;font-weight:600;font-size:.85rem">¿Cómo se calcula?</summary>
+      <div class="kpi-sub" style="line-height:1.6;margin-top:8px">
+      <b>A pasar</b> = todo lo que está pendiente de pago con ${esc(d.hubName)} (gastos, ahorros y asignaciones) menos lo que ya tengas ahí.<br>
+      <b>Disponible</b> = ingresos cobrados en los otros medios (${money(d.inCob,0)}) − lo ya pagado desde ellos (${money(d.outPagO,0)}) − lo que ya pasaste a ${esc(d.hubName)} (${money(d.passed,0)}, estimado con tus pagos ya hechos) − lo pendiente que se paga directo desde esos medios (${money(d.outPendO,0)}).<br>
+      Tildá cada reserva cuando termines de pasarla. En Ajustes → Reservas podés agrupar categorías.</div>
+    </details>`;
+  }
+  const pc=document.getElementById('planCard');
+  if(pc){
+    pc.innerHTML=`<div class="plan-mini"><div class="t"><small>Pasar a ${esc(d.hubName)}</small><b class="amt">${money(d.toPass,0)}</b><small>Falta pasar ${money(d.left,0)} · ${diffTxt.toLowerCase()} ${money(Math.abs(d.diff),0)}</small></div><button class="btn btn-primary btn-sm" type="button" data-goto-view="plan">Ver plan</button></div>`;
+  }
+}
+function renderReservas(){
+  const rl=document.getElementById('resList'),rm=document.getElementById('resMap');if(!rl||!rm)return;
+  rl.innerHTML=(state.reservas||[]).map(r=>`<div class="set-row" data-res-id="${r.id}"><input class="grow" data-res="name" value="${esc(r.name)}"><small style="color:var(--dim)">${state.cats.filter(c=>c.reserve===r.id).length} cat.</small><button class="icon-btn" type="button" data-res="del">${icon('trash',14)}</button></div>`).join('')||'<div class="empty" style="padding:8px">Sin reservas: cada categoría es su propia reserva.</div>';
+  const opts=cid=>'<option value="">= Misma que la categoría</option>'+(state.reservas||[]).map(r=>`<option value="${r.id}" ${(state.cats.find(c=>c.id===cid)||{}).reserve===r.id?'selected':''}>${esc(r.name)}</option>`).join('');
+  rm.innerHTML=state.cats.filter(c=>c.type!=='ingreso').map(c=>`<div class="res-map"><span>${esc(c.name)}</span><select data-res-map="${c.id}">${opts(c.id)}</select></div>`).join('');
+}
+
+function setupExtras(){
+  document.addEventListener('input',e=>{if(e.target&&e.target.id==='planHave')onMoneyInput(e)});
+  document.addEventListener('keydown',e=>{if(e.target&&e.target.id==='planHave'&&e.key==='Enter'){e.preventDefault();e.target.blur()}});
+  document.addEventListener('toggle',e=>{const g=e.target;if(g&&g.dataset&&g.dataset.gkey){if(!ui.planOpen)ui.planOpen={};ui.planOpen[g.dataset.gkey]=g.open}},true);
+  document.addEventListener('change',e=>{
+    const t=e.target;if(!t)return;
+    if(t.id==='planHub'){state.settings.hub=t.value;persist();renderPlan();return}
+    if(t.id==='planHave'){const m=ensureMonth(ui.month);m.plan=m.plan||{done:{}};m.plan.have=parseMoney(t.value);persist();renderPlan();return}
+    if(t.dataset&&t.dataset.planDone){const m=ensureMonth(ui.month);m.plan=m.plan||{have:0,done:{}};m.plan.done=m.plan.done||{};if(t.checked)m.plan.done[t.dataset.planDone]=true;else delete m.plan.done[t.dataset.planDone];persist();renderPlan();return}
+    if(t.dataset&&t.dataset.resMap!==undefined&&t.hasAttribute('data-res-map')){const c=state.cats.find(x=>x.id===t.dataset.resMap);if(c){if(t.value)c.reserve=t.value;else delete c.reserve;persist();renderReservas();renderPlan()}return}
+    if(t.dataset&&t.dataset.res==='name'){const row=t.closest('[data-res-id]');const r=row&&state.reservas.find(x=>x.id===row.dataset.resId);if(r&&t.value.trim()){r.name=titleCase(t.value);persist();renderReservas();renderPlan()}return}
+  });
+  document.addEventListener('click',e=>{
+    const t=e.target;if(!t||!t.closest)return;
+    const gv=t.closest('[data-goto-view]');if(gv){switchView(gv.dataset.gotoView);renderTabs();return}
+    if(t.closest('#planCopy')){copyText(planText(ui.month)).then(ok=>toast(ok?'Resumen copiado':'No se pudo copiar'));return}
+    if(t.closest('#btnAddRes')){const el=document.getElementById('newResName');const n=titleCase(el.value||'');if(!n){toast('Escribí un nombre');return}
+      state.reservas=state.reservas||[];state.reservas.push({id:uid(),name:n});el.value='';persist();renderReservas();toast('Reserva agregada');return}
+    const rd=t.closest('[data-res="del"]');if(rd){const row=rd.closest('[data-res-id]');const id=row&&row.dataset.resId;
+      state.reservas=state.reservas.filter(r=>r.id!==id);state.cats.forEach(c=>{if(c.reserve===id)delete c.reserve});persist();renderReservas();renderPlan();return}
+  });
+  document.addEventListener('click',e=>{
+    const t=e.target;if(!t||!t.closest)return;
+    const sb=t.closest('[data-sum-for]');
+    if(sb){const inp=document.getElementById(sb.dataset.sumFor);if(inp){let v=inp.value.replace(/\s+$/,'');if(v&&!/\+$/.test(v)&&parseTerm(v.split('+').pop())>0){inp.value=v+' + '}inp.focus();try{inp.setSelectionRange(inp.value.length,inp.value.length)}catch(_){}refreshSumPrev()}return}
+    const st=t.closest('[data-set-tab]');if(st){ui.setTab=st.dataset.setTab;applySetTab();return}
+    const cf=t.closest('[data-cat-filter]');if(cf){ui.catFilter=cf.dataset.catFilter;renderSettings();return}
+    const mn=t.closest('[data-method-icon-next]');
+    if(mn){const row=mn.closest('[data-method-id]');const m=row&&state.methods.find(x=>x.id===row.dataset.methodId);if(m){const i=METHOD_ICONS.indexOf(m.icon);m.icon=METHOD_ICONS[(i+1)%METHOD_ICONS.length];persist();renderSettings()}return}
+    const cn=t.closest('[data-cat-color-next]');
+    if(cn){const row=cn.closest('[data-cat-id]');const c=row&&state.cats.find(x=>x.id===row.dataset.catId);if(c){c.color=((Number(c.color)||1)%8)+1;persist();renderSettings();safeRun([renderCharts,renderQuickAdd])}return}
+  });
+  setInterval(refreshSumPrev,300);
 }
 
 function renderSyncSection(){
@@ -1715,6 +1954,7 @@ function importStateFromObject(data){
   state.cats=Array.isArray(data.cats)&&data.cats.length?data.cats:DEFAULT_CATS;
   state.goals=Array.isArray(data.goals)?data.goals:[];
   state.cheques=Array.isArray(data.cheques)?data.cheques:[];
+  state.reservas=Array.isArray(data.reservas)?data.reservas.filter(r=>r&&r.id&&r.name):[];
   state.months=cleanMonths(data.months);
   state.sync=Object.assign(defaultState().sync,(data.sync&&typeof data.sync==='object')?data.sync:{});
   state.sync.revision=Date.now();
@@ -1914,7 +2154,7 @@ function applyAccessibility(){
 
 function safeRun(fns){fns.forEach(f=>{try{f()}catch(e){console.error('Error en '+(f.name||'render'),e)}})}
 function renderAll(){
-  safeRun([renderTabs,renderSheetMore,renderKpis,renderCharts,renderQuickAdd,renderMovTable,renderCalendar,renderCheques,renderBudget,renderGoals,renderSettings,renderHelp,renderAsesor,updateSyncIndicator,applyAccessibility]);
+  safeRun([renderTabs,renderSheetMore,renderKpis,renderPlan,renderCharts,renderQuickAdd,renderMovTable,renderCalendar,renderCheques,renderBudget,renderGoals,renderSettings,renderHelp,renderAsesor,updateSyncIndicator,applyAccessibility]);
 }
 
 function gcalLink(raw,which){
@@ -1964,7 +2204,7 @@ function switchView(v){
 }
 function setMonth(key){
   ui.month=key;ui.calMonth=key;$('#monthPicker').value=key;
-  safeRun([renderKpis,renderCharts,renderMovTable,renderBudget,renderGoals,renderCalendar,renderAsesor]);
+  safeRun([renderKpis,renderPlan,renderCharts,renderMovTable,renderBudget,renderGoals,renderCalendar,renderAsesor]);
 }
 function resetQA(){
   ui.editId=null;
@@ -2547,6 +2787,7 @@ async function init(){
       if(!state.cats.some(c=>c.type==='asignacion')){DEFAULT_CATS.filter(c=>c.type==='asignacion').forEach(c=>state.cats.push({...c}))}
       state.goals=Array.isArray(saved.goals)?saved.goals.filter(g=>g&&typeof g==='object'):[];state.goals.forEach(g=>{if(g.baseCurrent===undefined)g.baseCurrent=Number(g.current||0)});
       state.cheques=Array.isArray(saved.cheques)?saved.cheques.filter(c=>c&&typeof c==='object'):[];
+      state.reservas=Array.isArray(saved.reservas)?saved.reservas.filter(r=>r&&r.id&&r.name):[];
       state.cheques.forEach(c=>{if(!c.chequeType)c.chequeType='comun'});
       state.months=cleanMonths(saved.months);
       state.sync=Object.assign(defaultState().sync,(saved.sync&&typeof saved.sync==='object')?saved.sync:{});
@@ -2562,6 +2803,7 @@ async function init(){
   try{applyDiscreto()}catch(e){console.error(e)}
   ui.calMonth=ui.month;
   try{bindUI()}catch(e){loadErr=loadErr||e;console.error('bindUI',e)}
+  try{setupExtras()}catch(e){console.error('extras',e)}
   try{setMonth(ui.month)}catch(e){console.error(e)}
   try{renderAll()}catch(e){console.error(e)}
   if(loadErr)showRecovery(loadErr);
