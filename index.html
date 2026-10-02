@@ -81,7 +81,7 @@ body.discreto .discreto-pill{display:block}
 .tab svg{width:18px;height:18px}
 .tab span{display:block;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
-.fab{position:fixed;bottom:78px;right:14px;z-index:59;width:56px;height:56px;border-radius:50%;background:var(--pr);color:var(--pi);box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;place-items:center;transition:var(--tr)}
+.fab{position:fixed;bottom:78px;right:14px;z-index:59;width:56px;height:56px;border-radius:50%;background:var(--pr);color:var(--pi);box-shadow:0 8px 24px rgba(0,0,0,.3);display:grid;place-items:center;transition:var(--tr)}
 .fab:active{transform:scale(.94)}
 .fab svg{width:26px;height:26px}
 
@@ -1493,8 +1493,17 @@ const ALL_VIEWS=[
   {v:'help',i:'help',l:'Ayuda'},
   {v:'settings',i:'settings',l:'Ajustes'}
 ];
+function normalizeBottomBar(){
+  const valid=ALL_VIEWS.map(x=>x.v);
+  let arr=Array.isArray(state.settings.bottomBar)?state.settings.bottomBar.filter(v=>valid.includes(v)):[];
+  if(!arr.length) arr=[...DEFAULT_BOTTOM_BAR];
+  // Mantener una barra útil: siempre debe existir al menos Panel y Movimientos.
+  ['panel','mov'].forEach(v=>{if(!arr.includes(v))arr.push(v)});
+  state.settings.bottomBar=Array.from(new Set(arr));
+  return state.settings.bottomBar;
+}
 function renderTabs(){
-  const sel=state.settings.bottomBar.filter(v=>ALL_VIEWS.some(x=>x.v===v));
+  const sel=normalizeBottomBar();
   const items=sel.map(v=>ALL_VIEWS.find(x=>x.v===v)).filter(Boolean);
   const hidden=ALL_VIEWS.filter(x=>!sel.includes(x.v));
   $('#tabs').innerHTML=items.map(t=>`
@@ -1503,13 +1512,13 @@ function renderTabs(){
     </button>`).join('')+(hidden.length?`<button class="tab tab-more" id="tabMore" data-more="1">${icon('dots',15)}<span>Más</span></button>`:'');
 }
 function renderSheetMore(){
-  const sel=state.settings.bottomBar;
+  const sel=normalizeBottomBar();
   const hidden=ALL_VIEWS.filter(x=>!sel.includes(x.v));
   $('#hSheetMore').innerHTML=icon('dots',16)+' Secciones';
   $('#sheetMoreGrid').innerHTML=hidden.map(t=>`<button data-view="${t.v}">${icon(t.i,22)}<span>${esc(t.l)}</span></button>`).join('')||'<div class="empty" style="grid-column:1/-1">Todas las secciones están en la barra</div>';
 }
 function renderBarEditor(){
-  const sel=state.settings.bottomBar.filter(v=>ALL_VIEWS.some(x=>x.v===v));
+  const sel=normalizeBottomBar().filter(v=>ALL_VIEWS.some(x=>x.v===v));
   const ordered=sel.map(v=>ALL_VIEWS.find(x=>x.v===v));
   const rest=ALL_VIEWS.filter(x=>!sel.includes(x.v));
   const rows=ordered.concat(rest);
@@ -1666,6 +1675,7 @@ function importStateFromObject(data){
   state=Object.assign(defaultState(),data);
   state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},data.settings||{});
   if(!Array.isArray(state.settings.bottomBar)||!state.settings.bottomBar.length)state.settings.bottomBar=[...DEFAULT_BOTTOM_BAR];
+  normalizeBottomBar();
   state.methods=Array.isArray(data.methods)&&data.methods.length?data.methods:DEFAULT_METHODS;
   state.cats=Array.isArray(data.cats)&&data.cats.length?data.cats:DEFAULT_CATS;
   state.goals=Array.isArray(data.goals)?data.goals:[];
@@ -2104,9 +2114,11 @@ function bindEvents(){
     if(mvSheet){switchView(mvSheet.dataset.view);closeSheets();return}
 
     const bt=t.closest('[data-bar-toggle]');
-    if(bt){const v=bt.dataset.barToggle;const arr=state.settings.bottomBar;
-      if(bt.checked){if(!arr.includes(v))arr.push(v)}else{state.settings.bottomBar=arr.filter(x=>x!==v)}
-      persist();renderBarEditor();renderTabs();renderSheetMore();return}
+    if(bt){const v=bt.dataset.barToggle;const arr=normalizeBottomBar();
+      if(bt.checked){if(!arr.includes(v))arr.push(v)}
+      else if(v==='panel'||v==='mov'){bt.checked=true;toast(v==='panel'?'Panel no puede ocultarse':'Movimientos no puede ocultarse');return}
+      else state.settings.bottomBar=arr.filter(x=>x!==v);
+      normalizeBottomBar();persist();renderBarEditor();renderTabs();renderSheetMore();return}
     const bu=t.closest('[data-bar-up]');
     if(bu){const v=bu.dataset.barUp;const arr=state.settings.bottomBar;const i=arr.indexOf(v);
       if(i>0){[arr[i-1],arr[i]]=[arr[i],arr[i-1]];persist();renderBarEditor();renderTabs();renderSheetMore()}return}
@@ -2482,6 +2494,7 @@ async function init(){
     state.settings=Object.assign({theme:'boca',discreto:false,bottomBar:[...DEFAULT_BOTTOM_BAR]},saved.settings||{});
     if(state.settings.theme==='millonario')state.settings.theme='boca';
     if(!Array.isArray(state.settings.bottomBar)||!state.settings.bottomBar.length)state.settings.bottomBar=[...DEFAULT_BOTTOM_BAR];
+    normalizeBottomBar();
     state.methods=Array.isArray(saved.methods)&&saved.methods.length?saved.methods:DEFAULT_METHODS.map(m=>({...m}));
     state.cats=Array.isArray(saved.cats)&&saved.cats.length?saved.cats:DEFAULT_CATS.map(c=>({...c}));
     if(!state.cats.some(c=>c.type==='asignacion')){DEFAULT_CATS.filter(c=>c.type==='asignacion').forEach(c=>state.cats.push({...c}))}
